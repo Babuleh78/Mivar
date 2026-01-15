@@ -7,107 +7,80 @@ import uuid
 def main():
     EXCEL_FILE = "move.xlsx" 
 
+    # Читаем все листы Excel
     df = pd.read_excel(EXCEL_FILE, sheet_name=None, dtype=str)
+    
+    # Словарь для хранения данных по классам
+    classes_data = {}
+    
+    # Список для хранения всех формул с информацией о классе
+    all_formulas_info = []
+    
+    # Множество всех переменных
+    all_variables = set()
 
-    variables_set = set()
-    formulas_dict = {}
-
-
+    # Обрабатываем каждый лист
     for sheet_name, sheet_data in df.items():
-        first_column = sheet_data.columns[0]
-        
-        for index, value in sheet_data[first_column].items():
-            if pd.notna(value) and isinstance(value, str):
-                value = str(value).strip()
-                
-                if any(sym in value for sym in '=+-*/^()'):
-                    words = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', value)
-                    variables_set.update(words)
+        # Предполагаем, что заголовки классов находятся в первой строке
+        for col_idx, col_name in enumerate(sheet_data.columns):
+            # Создаем запись для класса, если его еще нет
+            if col_name not in classes_data:
+                classes_data[col_name] = {
+                    'variables': set(),
+                    'formulas': []
+                }
+            
+            # Обрабатываем ячейки в этом столбце
+            for cell_value in sheet_data[col_name]:
+                if pd.notna(cell_value) and isinstance(cell_value, str):
+                    cell_value = str(cell_value).strip()
                     
-                    # Создаем шаблон формулы
-                    if '=' in value:
-                        left_part, right_part = value.split('=', 1)
-                        left_part = left_part.strip()
-                        right_part = right_part.strip()
+                    # Если это формула (содержит математические символы)
+                    if any(sym in cell_value for sym in '=+-*/^()'):
+                        # Ищем переменные в формуле
+                        words = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', cell_value)
+                        classes_data[col_name]['variables'].update(words)
+                        all_variables.update(words)
                         
-                        original_no_spaces = f"{left_part}={right_part}".replace(" ", "")
-                        
-                        template = "y="
-                        
-                        # Находим все переменные в правой части
-                        right_vars = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', right_part)
-                        
-                        # Создаем словарь замен с сохранением порядка
-                        var_mapping = {}
-                        var_counter = 0
-                        var_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
-                                    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-                    
-                        tokens = re.findall(r'[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\^\d+|[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*|\d+\^\d+|\S', right_part)
-                        
-                        result_tokens = []
-                        for token in tokens:
-                            # Проверяем, является ли токен переменной со степенью
-                            if re.match(r'^[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\^\d+$', token):
-                                # Разделяем переменную и степень
-                                var_part, exp_part = token.split('^')
-                                
-                                if var_part != left_part and not var_part.isdigit():
-                                    if var_part not in var_mapping:
-                                        var_mapping[var_part] = var_letters[var_counter]
-                                        var_counter += 1
-                                    
-                                    # Заменяем var_part на шаблонную переменную, оставляя степень
-                                    result_tokens.append(f"{var_mapping[var_part]}^{exp_part}")
-                                else:
-                                    result_tokens.append(token)
+                        # Обрабатываем формулу, если она содержит '='
+                        if '=' in cell_value:
+                            left_part, right_part = cell_value.split('=', 1)
+                            left_part = left_part.strip()
+                            right_part = right_part.strip()
                             
-                            # Проверяем, является ли токен простой переменной
-                            elif (re.match(r'^[a-zA-Zα-ωΑ-ΩΔ]', token) and 
-                                token != left_part and
-                                not token.isdigit() and
-                                '^' not in token):  # Убеждаемся, что это не выражение со степенью
-                                
-                                if token not in var_mapping:
-                                    var_mapping[token] = var_letters[var_counter]
-                                    var_counter += 1
-                                
-                                result_tokens.append(var_mapping[token])
-                            else:
-                                result_tokens.append(token)
-                        
-                        template_right = ''.join(result_tokens)
-                     
-                        # Используем регулярное выражение для поиска выражений вида "переменная^число"
-                        def replace_pow(match):
-                            var = match.group(1)  # переменная
-                            exp = match.group(2)  # степень
-                            return f"Math.pow({var}, {exp})"
-                        
-                        # Заменяем все a^2, b^3 и т.д. на Math.pow(a, 2), Math.pow(b, 3)
-                        template_right = re.sub(r'([a-zA-Z])\^(\d+)', replace_pow, template_right)
-                        
-                        # Также заменяем выражения вида (a+b)^2 на Math.pow((a+b), 2)
-                        # Это более сложная замена для выражений в скобках
-                        def replace_complex_pow(match):
-                            expr = match.group(1)  # выражение в скобках
-                            exp = match.group(2)   # степень
-                            return f"Math.pow({expr}, {exp})"
-                        
-                        # Заменяем выражения вида (a+b)^2 на Math.pow((a+b), 2)
-                        template_right = re.sub(r'\(([^)]+)\)\^(\d+)', replace_complex_pow, template_right)
-                        
-                        template += template_right.replace(" ", "")
-                        
-                        if template not in formulas_dict:
-                            formulas_dict[template] = []
-                        formulas_dict[template].append(value)
+                            # Добавляем левую часть как переменную
+                            classes_data[col_name]['variables'].add(left_part)
+                            all_variables.add(left_part)
+                            
+                            # Создаем шаблон формулы
+                            template = create_formula_template(left_part, right_part)
+                            
+                            # Сохраняем информацию о формуле
+                            formula_info = {
+                                'class': col_name,
+                                'original': cell_value,
+                                'left': left_part,
+                                'right': right_part,
+                                'template': template,
+                                'variables': words
+                            }
+                            
+                            all_formulas_info.append(formula_info)
+                            classes_data[col_name]['formulas'].append(formula_info)
 
-    ################# Преобразование шаблонов формул в relations_list
-    
+    ################# Преобразование формул в relations_list
+    # Создаем уникальные relations для каждого уникального шаблона
     relations_list = []
+    template_counter = 1
+    template_to_relation = {}  # Маппинг шаблон -> имя relation
     
-    for template_idx, (template, formulas) in enumerate(formulas_dict.items(), 1):
+    # Собираем все уникальные шаблоны
+    all_templates = set()
+    for formula_info in all_formulas_info:
+        all_templates.add(formula_info['template'])
+    
+    # Создаем relation для каждого уникального шаблона
+    for template in sorted(all_templates):
         if template.startswith("y="):
             formula_part = template[2:] 
 
@@ -124,8 +97,9 @@ def main():
             # outObj: всегда 'y'
             out_obj = "y:double"
             
+            relation_name = f"Rule_{template_counter}"
             relation = {
-                'shortName': f"Rule_{template_idx}",
+                'shortName': relation_name,
                 'inObj': in_obj,
                 'outObj': out_obj,
                 'relationType': 'simple',
@@ -133,12 +107,8 @@ def main():
             }
             
             relations_list.append(relation)
-
-    ################# Запись переменных в parameters_list
-    parameters_list = []
-
-    for el in variables_set:
-        parameters_list.append(str(el))
+            template_to_relation[template] = relation_name
+            template_counter += 1
 
     ################# Создание XML
     
@@ -157,93 +127,191 @@ def main():
         relations_list=relations_list
     )
 
-    nested_class1, nested1_params = creator.create_class(
-        classes_elem, 
-        "Задачи на движение",
-        is_nested=True,
-        parameters_list=parameters_list
-    )
-
-    ################# СОЗДАНИЕ ПРАВИЛ (RULES) ИЗ ШАБЛОНОВ
+    ################# СОЗДАНИЕ КЛАССОВ (по одному на каждый столбец)
     
     print("\n" + "="*60)
-    print("СОЗДАНИЕ ПРАВИЛ ИЗ ШАБЛОНОВ:")
+    print("СОЗДАНИЕ КЛАССОВ:")
     print("="*60)
     
-    # Для каждого шаблона создаем правило
-    for template_idx, (template, formulas) in enumerate(formulas_dict.items(), 1):
-        print(f"\nШаблон {template_idx}: {template}")
-        print(f"Количество формул: {len(formulas)}")
+    # Создаем вложенные классы для каждого заголовка столбца
+    for class_idx, class_name in enumerate(classes_data.keys(), 1):
+        print(f"Создание класса {class_idx}: {class_name}")
         
-        # Берем первую формулу из списка для примера
-        if formulas:
-            example_formula = formulas[0]
-            print(f"Пример формулы: {example_formula}")
+        # Получаем переменные для этого класса
+        class_variables = list(classes_data[class_name]['variables'])
+        
+        # Создаем вложенный класс
+        nested_class, nested_params = creator.create_class(
+            classes_elem, 
+            class_name,
+            is_nested=True,
+            parameters_list=class_variables
+        )
+        
+        print(f"  Переменные: {class_variables}")
+
+    ################# СОЗДАНИЕ ПРАВИЛ (RULES)
+    
+    print("\n" + "="*60)
+    print("СОЗДАНИЕ ПРАВИЛ:")
+    print("="*60)
+    
+    rule_counter = 1
+    
+    # Создаем правило для каждой формулы
+    for formula_info in all_formulas_info:
+        class_name = formula_info['class']
+        original_formula = formula_info['original']
+        left_part = formula_info['left']
+        right_part = formula_info['right']
+        template = formula_info['template']
+        
+        print(f"\nФормула {rule_counter}: {original_formula}")
+        print(f"  Класс: {class_name}")
+        print(f"  Шаблон: {template}")
+        
+        # Находим переменные в правой части (кроме левой части)
+        original_vars = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', right_part)
+        original_vars = [v for v in original_vars if v != left_part]
+        original_vars = sorted(set(original_vars), key=lambda x: right_part.index(x) if x in right_part else len(right_part))
+        
+        # Находим переменные в шаблоне (a, b, c, ...)
+        template_vars = re.findall(r'\b[a-z]\b', template[2:])
+        template_vars = sorted(set(template_vars))
+        
+        # Создаем маппинг: шаблонная переменная -> оригинальная переменная
+        var_mapping = {}
+        if len(original_vars) == len(template_vars):
+            for i, t_var in enumerate(template_vars):
+                if i < len(original_vars):
+                    var_mapping[t_var] = original_vars[i]
+        
+        # Обратный маппинг (оригинальная -> шаблонная)
+        rev_var_mapping = {}
+        for key, value in var_mapping.items():
+            rev_var_mapping[value] = key
+        
+        # Если маппинг успешен и есть relation для этого шаблона
+        if var_mapping and template in template_to_relation:
+            # Определяем входные параметры (оригинальные имена)
+            input_params = []
+            for t_var in template_vars:
+                if t_var in var_mapping:
+                    input_params.append(var_mapping[t_var])
             
-            # Разбираем пример формулы, чтобы понять соответствие переменных
-            if '=' in example_formula:
-                left_part, right_part = example_formula.split('=', 1)
-                left_part = left_part.strip()
-                right_part = right_part.strip()
-                
-                # Находим переменные в оригинальной формуле
-                original_vars = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', right_part)
-                original_vars = [v for v in original_vars if v != left_part]
-                original_vars = sorted(set(original_vars), key=lambda x: right_part.index(x))
-                
-                # Находим переменные в шаблоне (a, b, c, ...)
-                template_vars = re.findall(r'\b[a-z]\b', template[2:])
-                template_vars = sorted(set(template_vars))
-                
-                # Создаем маппинг: шаблонная переменная -> оригинальная переменная
-                var_mapping = {}
-                if len(original_vars) == len(template_vars):
-                    for i, t_var in enumerate(template_vars):
-                        if i < len(original_vars):
-                            var_mapping[t_var] = original_vars[i]
-                
-                rev_var_mapping = {}
-                for key, value in var_mapping.items():
-                    rev_var_mapping[value] = key
-                
-                print(rev_var_mapping)
-                # Если маппинг успешен, создаем правило
-                if var_mapping:
-                    # Определяем входные параметры (оригинальные имена)
-                    input_params = []
-                    for t_var in template_vars:
-                        if t_var in var_mapping:
-                            input_params.append(var_mapping[t_var])
-                    
-                    # Определяем выходной параметр (левая часть формулы)
-                    output_param = left_part
-                    print(output_param, input_params)
-                    # Создаем правило
-                    try:
-                        creator.add_rule(
-                            main_rules,
-                            rule_name=f"rule_{template_idx}",
-                            relation_name=f"Rule_{template_idx}",
-                            input_params=input_params,
-                            output_param=output_param,
-                            class_names=["Задачи на движение"],
-                            reverse_map = rev_var_mapping
-                        )
-                        print(f"✓ Создано правило rule_{template_idx}")
-                        print(f"  Входные параметры: {input_params}")
-                        print(f"  Выходной параметр: {output_param}")
-                    except Exception as e:
-                        print(f"✗ Ошибка создания правила: {e}")
-                else:
-                    print(f"✗ Не удалось сопоставить переменные для шаблона {template}")
+            # Определяем выходной параметр (левая часть формулы)
+            output_param = left_part
+            
+            # Получаем имя relation для этого шаблона
+            relation_name = template_to_relation[template]
+            
+            # Создаем правило
+            try:
+                creator.add_rule(
+                    main_rules,
+                    rule_name=f"rule_{rule_counter}",
+                    relation_name=relation_name,
+                    input_params=input_params,
+                    output_param=output_param,
+                    class_names=[class_name],
+                    reverse_map=rev_var_mapping
+                )
+                print(f"  ✓ Создано правило rule_{rule_counter}")
+                print(f"    Входные параметры: {input_params}")
+                print(f"    Выходной параметр: {output_param}")
+                print(f"    Relation: {relation_name}")
+                rule_counter += 1
+            except Exception as e:
+                print(f"  ✗ Ошибка создания правила: {e}")
+        else:
+            print(f"  ✗ Не удалось создать правило: маппинг неудачен")
 
-
+    ################# Сохранение XML файла
+    
     tree = etree.ElementTree(model)
     
     with open("MIVAR1.xml", "wb") as f:
         tree.write(f, encoding="utf-8", pretty_print=False)
     
-    print("XML файл создан: MIVAR1.xml")
+    print("\n" + "="*60)
+    print(f"XML файл создан: MIVAR1.xml")
+    print(f"Создано классов: {len(classes_data)}")
+    print(f"Создано формул: {len(all_formulas_info)}")
+    print(f"Создано правил: {rule_counter - 1}")
+    print(f"Создано relations: {len(relations_list)}")
+    print("="*60)
+
+def create_formula_template(left_part, right_part):
+    """Создает шаблон формулы из оригинальной формулы"""
+    original_no_spaces = f"{left_part}={right_part}".replace(" ", "")
+    
+    template = "y="
+    
+    # Находим все переменные в правой части
+    right_vars = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', right_part)
+    
+    # Создаем словарь замен с сохранением порядка
+    var_mapping = {}
+    var_counter = 0
+    var_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
+                  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    
+    # Токенизация правой части
+    tokens = re.findall(r'[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\^\d+|[a-zA-Zα-ωΑ-ΩΔ][a-zA-zα-ωΑ-Ω0-9_]*|\d+\^\d+|\S', right_part)
+    
+    result_tokens = []
+    for token in tokens:
+        # Проверяем, является ли токен переменной со степенью
+        if re.match(r'^[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\^\d+$', token):
+            # Разделяем переменную и степень
+            var_part, exp_part = token.split('^')
+            
+            if var_part != left_part and not var_part.isdigit():
+                if var_part not in var_mapping:
+                    var_mapping[var_part] = var_letters[var_counter]
+                    var_counter += 1
+                
+                # Заменяем var_part на шаблонную переменную, оставляя степень
+                result_tokens.append(f"{var_mapping[var_part]}^{exp_part}")
+            else:
+                result_tokens.append(token)
+        
+        # Проверяем, является ли токен простой переменной
+        elif (re.match(r'^[a-zA-Zα-ωΑ-ΩΔ]', token) and 
+            token != left_part and
+            not token.isdigit() and
+            '^' not in token):  # Убеждаемся, что это не выражение со степенью
+            
+            if token not in var_mapping:
+                var_mapping[token] = var_letters[var_counter]
+                var_counter += 1
+            
+            result_tokens.append(var_mapping[token])
+        else:
+            result_tokens.append(token)
+    
+    template_right = ''.join(result_tokens)
+    
+    # Заменяем степени на вызовы Math.pow
+    def replace_pow(match):
+        var = match.group(1)
+        exp = match.group(2)
+        return f"Math.pow({var}, {exp})"
+    
+    # Заменяем выражения вида a^2
+    template_right = re.sub(r'([a-zA-Z])\^(\d+)', replace_pow, template_right)
+    
+    # Заменяем выражения вида (a+b)^2
+    def replace_complex_pow(match):
+        expr = match.group(1)
+        exp = match.group(2)
+        return f"Math.pow({expr}, {exp})"
+    
+    template_right = re.sub(r'\(([^)]+)\)\^(\d+)', replace_complex_pow, template_right)
+    
+    template += template_right.replace(" ", "")
+    
+    return template
 
 if __name__ == "__main__":
     main()
