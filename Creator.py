@@ -11,7 +11,6 @@ def main():
     FC = FormulaCreator()
     EXCEL_FILE = FC.process_excel_by_column(OLD_EXCEL_FILE)
 
-
     # Читаем все листы Excel
     df = pd.read_excel(EXCEL_FILE, sheet_name=None, dtype=str)
     
@@ -26,54 +25,92 @@ def main():
 
     # Обрабатываем каждый лист
     for sheet_name, sheet_data in df.items():
-        # Предполагаем, что заголовки классов находятся в первой строке
         for col_idx, col_name in enumerate(sheet_data.columns):
             # Создаем запись для класса, если его еще нет
             if col_name not in classes_data:
                 classes_data[col_name] = {
                     'variables': set(),
                     'formulas': [],
-                    'xml_element': None,  # Будем хранить ссылку на XML-элемент класса
-                    'rules_element': None  # Будем хранить ссылку на элемент правил
+                    'additional_info': {},  
+                    'xml_element': None,
+                    'rules_element': None
                 }
             
+            is_main_part = True
             # Обрабатываем ячейки в этом столбце
             for cell_value in sheet_data[col_name]:
                 if pd.notna(cell_value) and isinstance(cell_value, str):
                     cell_value = str(cell_value).strip()
+                  
+                    if is_main_part and cell_value == "Дополнительно":
+                        is_main_part = False
+                        continue 
                     
-                    # Если это формула (содержит математические символы)
-                    if any(sym in cell_value for sym in '=+-*/^()'):
-                        # Ищем переменные в формуле
-                        words = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', cell_value)
-                        classes_data[col_name]['variables'].update(words)
-                        all_variables.update(words)
-                        
-                        # Обрабатываем формулу, если она содержит '='
-                        if '=' in cell_value:
-                            left_part, right_part = cell_value.split('=', 1)
-                            left_part = left_part.strip()
-                            right_part = right_part.strip()
+                    if is_main_part:
+                        # Если это формула (содержит математические символы)
+                        if any(sym in cell_value for sym in '=+-*/^()'):
+                            # Ищем переменные в формуле
+                            words = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', cell_value)
+                            classes_data[col_name]['variables'].update(words)
+
+                            # Обрабатываем формулу, если она содержит '='
+                            if '=' in cell_value:
+                                left_part, right_part = cell_value.split('=', 1)
+                                left_part = left_part.strip()
+                                right_part = right_part.strip()
+                                
+                                # Добавляем левую часть как переменную
+                                classes_data[col_name]['variables'].add(left_part)
+                                all_variables.add(left_part)
+                                
+                                # Создаем шаблон формулы
+                                template = create_formula_template(left_part, right_part)
+                                
+                                # Сохраняем информацию о формуле
+                                formula_info = {
+                                    'class': col_name,
+                                    'original': cell_value,
+                                    'left': left_part,
+                                    'right': right_part,
+                                    'template': template,
+                                    'variables': words
+                                }
+                                
+                                all_formulas_info.append(formula_info)
+                                classes_data[col_name]['formulas'].append(formula_info)
+                       
+                    else:
+                        if ':' in cell_value:
+                            # Формат: P:"Мощность"
+                            parts = cell_value.split(':', 1)
+                            if len(parts) == 2:
+                                var_name = parts[0].strip()
+                                description = parts[1].strip().strip('"')
                             
-                            # Добавляем левую часть как переменную
-                            classes_data[col_name]['variables'].add(left_part)
-                            all_variables.add(left_part)
-                            
-                            # Создаем шаблон формулы
-                            template = create_formula_template(left_part, right_part)
-                            
-                            # Сохраняем информацию о формуле
-                            formula_info = {
-                                'class': col_name,
-                                'original': cell_value,
-                                'left': left_part,
-                                'right': right_part,
-                                'template': template,
-                                'variables': words
-                            }
-                            
-                            all_formulas_info.append(formula_info)
-                            classes_data[col_name]['formulas'].append(formula_info)
+                                if var_name not in classes_data[col_name]['additional_info']:
+                                    classes_data[col_name]['additional_info'][var_name] = (description, None)
+                                else:
+                                    # Обновляем только описание
+                                    old_descr, old_val = classes_data[col_name]['additional_info'][var_name]
+                                    classes_data[col_name]['additional_info'][var_name] = (description, old_val)
+                                
+                                classes_data[col_name]['variables'].add(var_name)
+                                
+                        elif '=' in cell_value and not any(sym in cell_value for sym in '+-*/^()'):
+                            # Формат: t=1 
+                            parts = cell_value.split('=', 1)
+                            if len(parts) == 2:
+                                var_name = parts[0].strip()
+                                default_value = parts[1].strip()
+                                
+                                if var_name not in classes_data[col_name]['additional_info']:
+                                    classes_data[col_name]['additional_info'][var_name] = (None, default_value)
+                                else:
+                                    # Обновляем только значение по умолчанию
+                                    old_descr, old_val = classes_data[col_name]['additional_info'][var_name]
+                                    classes_data[col_name]['additional_info'][var_name] = (old_descr, default_value)
+                                
+                                classes_data[col_name]['variables'].add(var_name)
 
     ################# Преобразование формул в relations_list
     relations_list = []
@@ -100,10 +137,9 @@ def main():
             
             in_obj = ";".join(in_obj_parts) if in_obj_parts else " "
             
-            # outObj: всегда 'y'
             out_obj = "y:double"
             
-            relation_name = f"Rule_{template_counter}"
+            relation_name = f"{template}"
             relation = {
                 'shortName': relation_name,
                 'inObj': in_obj,
@@ -132,7 +168,6 @@ def main():
         str(EXCEL_FILE),
         relations_list=relations_list
     )
-
     
     # Создаем вложенные классы для каждого заголовка столбца
     for class_idx, class_name in enumerate(classes_data.keys(), 1):
@@ -141,12 +176,17 @@ def main():
         # Получаем переменные для этого класса
         class_variables = list(classes_data[class_name]['variables'])
         
+        # Получаем дополнительную информацию для этого класса
+        additional_info = classes_data[class_name].get('additional_info', {})
+        print(f"  Дополнительная информация: {additional_info}")
+        
         # Создаем вложенный класс и сохраняем его элементы
         nested_class, nested_params = creator.create_class(
             classes_elem, 
             class_name,
             is_nested=True,
-            parameters_list=class_variables
+            parameters_list=class_variables,
+            additional_info=additional_info  # ПЕРЕДАЕМ ДОПОЛНИТЕЛЬНУЮ ИНФОРМАЦИЮ
         )
         
         # Сохраняем ссылку на XML-элемент класса
@@ -157,8 +197,6 @@ def main():
         classes_data[class_name]['rules_element'] = rules_element
         
         print(f"  Переменные: {class_variables}")
-
-  
     
     rule_counter = 1
     
@@ -175,7 +213,7 @@ def main():
         original_vars = [v for v in original_vars if v != left_part]
         original_vars = sorted(set(original_vars), key=lambda x: right_part.index(x) if x in right_part else len(right_part))
         
-        # Находим переменные в шаблоне (a, b, c, ...)
+        # Находим переменные в шаблоне 
         template_vars = re.findall(r'\b[a-z]\b', template[2:])
         template_vars = sorted(set(template_vars))
         
@@ -211,12 +249,13 @@ def main():
             if class_rules_element is None:
                 print(f"  ✗ Не найден элемент правил для класса {class_name}")
                 continue
+
+            rule_name_str = original_formula.replace(" ", "")
                 
-            # Создаем правило В ПРАВИЛЬНОМ МЕСТЕ (во вложенном классе)
             try:
                 creator.add_rule(
-                    class_rules_element,  # Используем rules элемента класса, а не main_rules!
-                    rule_name=f"rule_{rule_counter}",
+                    class_rules_element,  
+                    rule_name=rule_name_str,
                     relation_name=relation_name,
                     input_params=input_params,
                     output_param=output_param,
@@ -269,7 +308,6 @@ def create_formula_template(left_part, right_part):
                     var_mapping[var_part] = var_letters[var_counter]
                     var_counter += 1
                 
-                # Заменяем var_part на шаблонную переменную, оставляя степень
                 result_tokens.append(f"{var_mapping[var_part]}^{exp_part}")
             else:
                 result_tokens.append(token)
@@ -277,8 +315,7 @@ def create_formula_template(left_part, right_part):
         # Проверяем, является ли токен простой переменной
         elif (re.match(r'^[a-zA-Zα-ωΑ-ΩΔ]', token) and 
             token != left_part and
-            not token.isdigit() and
-            '^' not in token):  # Убеждаемся, что это не выражение со степенью
+            not token.isdigit() and '^' not in token): 
             
             if token not in var_mapping:
                 var_mapping[token] = var_letters[var_counter]
