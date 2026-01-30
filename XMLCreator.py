@@ -38,7 +38,6 @@ class XMLCreator:
     
     def _add_relation(self, relations_elem, rel_data):
         relation_id = str(uuid.uuid4())
-        
         if isinstance(rel_data, dict):
             shortName = rel_data.get('shortName', '')
             inObj = rel_data.get('inObj', ' ')
@@ -78,16 +77,16 @@ class XMLCreator:
         return new_relation
     
     def create_class(self, parent, short_name="Вложенный класс", is_nested=False, 
-                     class_id=None, parameters_list=None):
-        
+                 class_id=None, parameters_list=None, additional_info=None):
+    
         if class_id is None:
             class_id = str(uuid.uuid4())
         
         id_str = class_id if is_nested else f"{{{class_id}}}"
         
         new_class = etree.SubElement(parent, "class",
-                                     id=id_str,
-                                     shortName=short_name)
+                                    id=id_str,
+                                    shortName=short_name)
         
         new_class.text = "\n"
         
@@ -102,10 +101,26 @@ class XMLCreator:
                 key = f"{short_name}:{param_name}"
                 self.parameter_ids[key] = param_id
                 
-                param = etree.SubElement(parameters, "parameter",
-                                       id=param_id,
-                                       shortName=param_name,
-                                       type="double")
+                # Создаем базовые атрибуты параметра
+                param_attrs = {
+                    "id": param_id,
+                    "shortName": param_name,
+                    "type": "double"
+                }
+                
+                # Добавляем дополнительные атрибуты, если они есть
+                if additional_info and param_name in additional_info:
+                    descr, start_value = additional_info[param_name]
+                    
+                    # Проверяем, что значения не None и не пустые
+                    if descr is not None and str(descr).strip():
+                        param_attrs["description"] = str(descr).strip()
+                    
+                    if start_value is not None and str(start_value).strip():
+                        param_attrs["defaultValue"] = str(start_value).strip()
+                
+                # Создаем элемент parameter со всеми атрибутами
+                param = etree.SubElement(parameters, "parameter", **param_attrs)
                 param.tail = "\n"
             
             if parameters.getchildren():
@@ -114,7 +129,7 @@ class XMLCreator:
         
         parameters.tail = "\n"
         
-        # Добавляем пустые rules
+        # Создаем остальные элементы
         rules = etree.SubElement(new_class, "rules")
         rules.text = "\n"
         rules.tail = "\n"
