@@ -2,124 +2,60 @@ import pandas as pd
 import re
 from lxml import etree
 import uuid
-from collections import OrderedDict
 
 from XMLCreator import XMLCreator
 from FormulaCreator import FormulaCreator
+from FormulaProcessor import FormulaProcessor, FormulaRegistry
 
-def normalize_variable_name(var_name):
-    ru_to_en = {
-        'а': 'a', 'в': 'v', 'е': 'e', 'к': 'k', 'м': 'm', 'н': 'n', 
-        'о': 'o', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'х': 'h'
-    }
+def is_negative_expression(right_part):
+    stripped = right_part.strip()
+    if not stripped.startswith('-'):
+        return False
+    return True
+
+def filter_ambiguous_variants(formula_list):
+   
+    if not formula_list:
+        return []
     
-    result = ''
-    for char in var_name:
-        if char.lower() in ru_to_en:
-            result += ru_to_en[char.lower()]
-        elif char.isalpha() and char.isascii():
-            result += char
+    if len(formula_list) == 1:
+        return formula_list
+    
+    # Разделяем на положительные и отрицательные варианты
+    positive = []
+    negative = []
+    
+    for formula in formula_list:
+        if is_negative_expression(formula['right']):
+            negative.append(formula)
         else:
-            result += char
+            positive.append(formula)
+    # Приоритет: оставляем только положительные варианты
+    if positive:
+        return positive
     
-    return result
+    # Если только отрицательные — возвращаем один вариант (менее худший)
+    if negative:
+        return [negative[0]]
+    
+    return formula_list
 
-def create_formula_template(left_part, right_part):
-    """Создает шаблон формулы с нормализацией переменных"""
-    original_no_spaces = f"{left_part}={right_part}".replace(" ", "")
+def process_excel_file(excel_file):
+    """Основная функция обработки Excel файла"""
     
-    template = "y="
+    # Инициализируем FormulaCreator для предобработки
+    fc = FormulaCreator()
+    processed_excel = fc.process_excel_by_column(excel_file)
     
-    # Находим все переменные в правой части
-    right_vars = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', right_part)
-    
-    # Создаем словарь замен с сохранением порядка
-    var_mapping = OrderedDict()
-    var_counter = 0
-    var_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 
-                  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-    
-    # Токенизация правой части
-    tokens = re.findall(r'[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\^\d+|[a-zA-Zα-ωΑ-ΩΔ][a-zA-zα-ωΑ-Ω0-9_]*|\d+\^\d+|\S', right_part)
-    
-    result_tokens = []
-    for token in tokens:
-        # Проверяем, является ли токен переменной со степенью
-        if re.match(r'^[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\^\d+$', token):
-            # Разделяем переменную и степень
-            var_part, exp_part = token.split('^')
-            
-            if var_part != left_part and not var_part.isdigit():
-                # Нормализуем имя переменной перед созданием шаблона
-                normalized_var = normalize_variable_name(var_part)
-                if normalized_var not in var_mapping:
-                    var_mapping[normalized_var] = var_letters[var_counter]
-                    var_counter += 1
-                
-                result_tokens.append(f"{var_mapping[normalized_var]}^{exp_part}")
-            else:
-                result_tokens.append(token)
-        
-        # Проверяем, является ли токен простой переменной
-        elif (re.match(r'^[a-zA-Zα-ωΑ-ΩΔ]', token) and 
-            token != left_part and
-            not token.isdigit() and '^' not in token): 
-            
-            # Нормализуем имя переменной перед созданием шаблона
-            normalized_var = normalize_variable_name(token)
-            if normalized_var not in var_mapping:
-                var_mapping[normalized_var] = var_letters[var_counter]
-                var_counter += 1
-            
-            result_tokens.append(var_mapping[normalized_var])
-        else:
-            result_tokens.append(token)
-    
-    template_right = ''.join(result_tokens)
-    
-    # Заменяем степени на вызовы Math.pow
-    def replace_pow(match):
-        var = match.group(1)
-        exp = match.group(2)
-        return f"Math.pow({var}, {exp})"
-    
-    # Заменяем выражения вида a^2
-    template_right = re.sub(r'([a-zA-Z])\^(\d+)', replace_pow, template_right)
-    
-    # Заменяем выражения вида (a+b)^2
-    def replace_complex_pow(match):
-        expr = match.group(1)
-        exp = match.group(2)
-        return f"Math.pow({expr}, {exp})"
-    
-    template_right = re.sub(r'\(([^)]+)\)\^(\d+)', replace_complex_pow, template_right)
-    
-    template += template_right.replace(" ", "")
-    
-    canonical_template = re.sub(r'[а-яА-Я]', '', template)  # Убираем русские буквы
-    canonical_template = re.sub(r'[α-ωΑ-Ω]', '', canonical_template)  # Убираем греческие буквы
-
-    
-    return template, canonical_template
-
-def main():
-    OLD_EXCEL_FILE = "Phys7Class.xlsx" 
-
-    FC = FormulaCreator()
-    EXCEL_FILE = FC.process_excel_by_column(OLD_EXCEL_FILE)
-
     # Читаем все листы Excel
-    df = pd.read_excel(EXCEL_FILE, sheet_name=None, dtype=str)
+    df = pd.read_excel(processed_excel, sheet_name=None, dtype=str)
+    
+    # Инициализируем реестр формул
+    formula_registry = FormulaRegistry()
     
     # Словарь для хранения данных по классам
     classes_data = {}
     
-    # Список для хранения всех формул с информацией о классе
-    all_formulas_info = []
-    
-    # Множество всех переменных
-    all_variables = set()
-
     # Обрабатываем каждый лист
     for sheet_name, sheet_data in df.items():
         for col_idx, col_name in enumerate(sheet_data.columns):
@@ -128,7 +64,8 @@ def main():
                 classes_data[col_name] = {
                     'variables': set(),
                     'formulas': [],
-                    'additional_info': {},  
+                    'raw_formulas': {},  # Временное хранилище для фильтрации неоднозначных вариантов
+                    'additional_info': {},
                     'xml_element': None,
                     'rules_element': None
                 }
@@ -138,18 +75,17 @@ def main():
             for cell_value in sheet_data[col_name]:
                 if pd.notna(cell_value) and isinstance(cell_value, str):
                     cell_value = str(cell_value).strip()
-                  
+                    
                     if is_main_part and cell_value == "Дополнительно":
                         is_main_part = False
-                        continue 
+                        continue
                     
                     if is_main_part:
-                        # Если это формула (содержит математические символы)
-                        if any(sym in cell_value for sym in '=+-*/^()'):
+                        if FormulaProcessor.is_formula(cell_value):
                             # Ищем переменные в формуле
-                            words = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9_]*\b', cell_value)
+                            words = FormulaProcessor.extract_variables(cell_value)
                             classes_data[col_name]['variables'].update(words)
-
+                            
                             # Обрабатываем формулу, если она содержит '='
                             if '=' in cell_value:
                                 left_part, right_part = cell_value.split('=', 1)
@@ -158,133 +94,124 @@ def main():
                                 
                                 # Добавляем левую часть как переменную
                                 classes_data[col_name]['variables'].add(left_part)
-                                all_variables.add(left_part)
                                 
-                                # Создаем шаблон формулы и каноническую версию
-                                template, canonical_template = create_formula_template(left_part, right_part)
+                                # Накапливаем сырые формулы для последующей фильтрации
+                                if left_part not in classes_data[col_name]['raw_formulas']:
+                                    classes_data[col_name]['raw_formulas'][left_part] = []
                                 
-                                # Сохраняем информацию о формуле
-                                formula_info = {
-                                    'class': col_name,
+                                classes_data[col_name]['raw_formulas'][left_part].append({
                                     'original': cell_value,
                                     'left': left_part,
                                     'right': right_part,
-                                    'template': template,  # Оригинальный шаблон
-                                    'canonical_template': canonical_template,  # Канонический шаблон
                                     'variables': words
-                                }
-                                
-                                all_formulas_info.append(formula_info)
-                                classes_data[col_name]['formulas'].append(formula_info)
-                       
+                                })
                     else:
-                        if ':' in cell_value:
-                            # Формат: P:"Мощность"
-                            parts = cell_value.split(':', 1)
-                            if len(parts) == 2:
-                                var_name = parts[0].strip()
-                                description = parts[1].strip().strip('"')
-                            
-                                if var_name not in classes_data[col_name]['additional_info']:
-                                    classes_data[col_name]['additional_info'][var_name] = (description, None)
-                                else:
-                                    # Обновляем только описание
-                                    old_descr, old_val = classes_data[col_name]['additional_info'][var_name]
-                                    classes_data[col_name]['additional_info'][var_name] = (description, old_val)
-                                
-                                classes_data[col_name]['variables'].add(var_name)
-                                
-                        elif '=' in cell_value and not any(sym in cell_value for sym in '+-*/^()'):
-                            # Формат: t=1 
-                            parts = cell_value.split('=', 1)
-                            if len(parts) == 2:
-                                var_name = parts[0].strip()
-                                default_value = parts[1].strip()
-                                
-                                if var_name not in classes_data[col_name]['additional_info']:
-                                    classes_data[col_name]['additional_info'][var_name] = (None, default_value)
-                                else:
-                                    # Обновляем только значение по умолчанию
-                                    old_descr, old_val = classes_data[col_name]['additional_info'][var_name]
-                                    classes_data[col_name]['additional_info'][var_name] = (old_descr, default_value)
-                                
-                                classes_data[col_name]['variables'].add(var_name)
-
-
-    ################# Преобразование формул в relations_list
-    relations_list = []
-    template_to_relation = {}  
-    canonical_template_to_relation = {}  # Для отслеживания канонических шаблонов
+                        # Обработка дополнительной информации
+                        process_additional_info(cell_value, classes_data, col_name)
     
-    # Собираем все уникальные КАНОНИЧЕСКИЕ шаблоны (без русских/греческих букв)
-    all_canonical_templates = set()
-    for formula_info in all_formulas_info:
-        all_canonical_templates.add(formula_info['canonical_template'])
+    # === ФИЛЬТРАЦИЯ И ДОБАВЛЕНИЕ ФОРМУЛ В РЕЕСТР ===
+    # Выполняем после полной обработки всех листов
+    for class_name, class_data in classes_data.items():
+        for left_part, formula_list in class_data['raw_formulas'].items():
+            # Фильтруем неоднозначные варианты
+            filtered_formulas = filter_ambiguous_variants(formula_list)
+            
+            for formula_data in filtered_formulas:
+                left_part = formula_data['left']
+                right_part = formula_data['right']
+                original = formula_data['original']
+                words = formula_data['variables']
+                
+                # Создаем шаблон формулы (все преобразования внутри)
+                template, canonical_template = FormulaProcessor.create_formula_template(
+                    left_part, right_part
+                )
+                
+                # Проверяем на дубликаты
+                if not formula_registry.is_duplicate(canonical_template, left_part):
+                    # Сохраняем информацию о формуле
+                    formula_info = {
+                        'class': class_name,
+                        'original': original,
+                        'left': left_part,
+                        'right': right_part,
+                        'template': template,
+                        'canonical_template': canonical_template,
+                        'variables': words
+                    }
+                    
+                    formula_registry.add_formula(formula_info)
+                    class_data['formulas'].append(formula_info)
+        
+        # Удаляем временное хранилище
+        if 'raw_formulas' in class_data:
+            del class_data['raw_formulas']
     
-    # Создаем relation для каждого уникального канонического шаблона
-    for canonical_template in sorted(all_canonical_templates):
-        if canonical_template.startswith("y="):
-            formula_part = canonical_template[2:] 
+    return classes_data, formula_registry, processed_excel
 
-            variables_in_template = re.findall(r'\b[a-z]\b', formula_part)
+def process_additional_info(cell_value, classes_data, class_name):
+    """Обрабатывает дополнительную информацию о переменных"""
+    if ':' in cell_value:
+        # Формат: P:"Мощность"
+        parts = cell_value.split(':', 1)
+        if len(parts) == 2:
+            var_name = parts[0].strip()
+            description = parts[1].strip().strip('"')
             
-            input_vars = sorted(set(variables_in_template))
+            if var_name not in classes_data[class_name]['additional_info']:
+                classes_data[class_name]['additional_info'][var_name] = (description, None)
+            else:
+                old_descr, old_val = classes_data[class_name]['additional_info'][var_name]
+                classes_data[class_name]['additional_info'][var_name] = (description, old_val)
             
-            in_obj_parts = []
-            for var in input_vars:
-                in_obj_parts.append(f"{var}:double")
+            classes_data[class_name]['variables'].add(var_name)
             
-            in_obj = ";".join(in_obj_parts) if in_obj_parts else " "
+    elif '=' in cell_value and not any(sym in cell_value for sym in '+-*/^()'):
+        # Формат: t=1
+        parts = cell_value.split('=', 1)
+        if len(parts) == 2:
+            var_name = parts[0].strip()
+            default_value = parts[1].strip()
             
-            out_obj = "y:double"
+            if var_name not in classes_data[class_name]['additional_info']:
+                classes_data[class_name]['additional_info'][var_name] = (None, default_value)
+            else:
+                old_descr, old_val = classes_data[class_name]['additional_info'][var_name]
+                classes_data[class_name]['additional_info'][var_name] = (old_descr, default_value)
             
-            # Используем канонический шаблон как имя отношения
-            relation_name = f"{canonical_template}"
-            relation = {
-                'shortName': relation_name,
-                'inObj': in_obj,
-                'outObj': out_obj,
-                'relationType': 'simple',
-                'formula': canonical_template 
-            }
-            
-            relations_list.append(relation)
-            canonical_template_to_relation[canonical_template] = relation_name
-    
-    # Создаем маппинг от оригинальных шаблонов к каноническим
-    original_to_canonical = {}
-    for formula_info in all_formulas_info:
-        original_to_canonical[formula_info['template']] = formula_info['canonical_template']
+            classes_data[class_name]['variables'].add(var_name)
 
-    ################# Создание XML
+def create_xml_with_rules(classes_data, formula_registry, filename):
+    """Создает XML файл с правилами"""
     
+    # Создаем отношения из реестра формул
+    relations_list = formula_registry.create_relations()
+    
+    # Инициализируем XMLCreator
     creator = XMLCreator()
-
+    
+    # Создаем корневой элемент model
     model = etree.Element("model", 
                           id=f"{{{str(uuid.uuid4())}}}",
-                          shortName=str(EXCEL_FILE),
+                          shortName=str(filename),
                           formatXmlVersion="2.0",
-                          description=str(EXCEL_FILE))
+                          description=str(filename))
     model.text = "\n"
-
+    
+    # Создаем основной класс
     main_class_elem, main_params, main_rules, main_constraints, classes_elem, relations_elem = creator.create_main_class(
         model, 
-        str(EXCEL_FILE),
+        str(filename),
         relations_list=relations_list
     )
     
-    # Создаем вложенные классы для каждого заголовка столбца
+    # Создаем вложенные классы
     for class_idx, class_name in enumerate(classes_data.keys(), 1):
         print(f"Создание класса {class_idx}: {class_name}")
         
-        # Получаем переменные для этого класса
         class_variables = list(classes_data[class_name]['variables'])
-        
-        # Получаем дополнительную информацию для этого класса
         additional_info = classes_data[class_name].get('additional_info', {})
-        print(f"  Дополнительная информация: {len(additional_info)} переменных")
         
-        # Создаем вложенный класс и сохраняем его элементы
         nested_class, nested_params = creator.create_class(
             classes_elem, 
             class_name,
@@ -293,116 +220,104 @@ def main():
             additional_info=additional_info
         )
         
-        # Сохраняем ссылку на XML-элемент класса
         classes_data[class_name]['xml_element'] = nested_class
-        
-        # Находим элемент правил для этого класса
-        rules_element = nested_class.find("rules")
-        classes_data[class_name]['rules_element'] = rules_element
+        classes_data[class_name]['rules_element'] = nested_class.find("rules")
         
         print(f"  Переменные: {len(class_variables)}")
     
-    rule_counter = 1
-    processed_formulas = set()  # Для отслеживания уже обработанных формул
+    # Создаем правила для формул
+    create_rules_for_classes(classes_data, formula_registry, creator)
     
-    # Создаем правило для каждой формулы
-    for formula_info in all_formulas_info:
+    # Сохраняем XML файл
+    tree = etree.ElementTree(model)
+    with open("MIVAR.xml", "wb") as f:
+        tree.write(f, encoding="utf-8", pretty_print=True, xml_declaration=True)
+    
+    return len(relations_list), len(classes_data)
+
+def create_rules_for_classes(classes_data, formula_registry, creator):
+    """Создает правила для всех классов"""
+    rule_counter = 1
+    
+    for formula_info in formula_registry.get_all_formulas():
         class_name = formula_info['class']
         original_formula = formula_info['original']
         left_part = formula_info['left']
         right_part = formula_info['right']
-        template = formula_info['template']
         canonical_template = formula_info['canonical_template']
         
-        # Проверяем, не обрабатывали ли мы уже эту формулу (по каноническому представлению)
-        formula_key = f"{canonical_template}:{left_part}"
-        print(formula_key)
-        if formula_key in processed_formulas:
-            print(f"  Пропускаем дубликат: {original_formula}")
-            continue
-        
-        processed_formulas.add(formula_key)
-        
-        # Находим переменные в правой части (кроме левой части)
-        original_vars = re.findall(r'\b[a-zA-Zα-ωΑ-ΩΔ][a-zA-Zα-ωΑ-Ω0-9а-яА-Я_]*\b', right_part)
-        original_vars = [v for v in original_vars if v != left_part]
+        # Получаем оригинальные переменные
+        original_vars = FormulaProcessor.extract_variables(right_part, exclude=left_part)
         original_vars = sorted(set(original_vars), key=lambda x: right_part.index(x) if x in right_part else len(right_part))
         
-        # Находим переменные в каноническом шаблоне
+        # Получаем переменные из шаблона
         template_vars = re.findall(r'\b[a-z]\b', canonical_template[2:])
         template_vars = sorted(set(template_vars))
         
-        # Создаем маппинг: шаблонная переменная -> оригинальная переменная
-        var_mapping = {}
-        if len(original_vars) == len(template_vars):
-            for i, t_var in enumerate(template_vars):
-                if i < len(original_vars):
-                    var_mapping[t_var] = original_vars[i]
-        else:
-
-            print(f"  Предупреждение: несоответствие переменных в формуле {original_formula}")
-            print(original_formula, left_part, right_part, canonical_template, original_vars, template_vars)
-            continue
-
-        # Обратный маппинг (оригинальная -> шаблонная)
-        rev_var_mapping = {}
-        for key, value in var_mapping.items():
-            rev_var_mapping[value] = key
+        # Создаем маппинг переменных
+        var_mapping, rev_var_mapping = FormulaProcessor.create_var_mapping(
+            original_vars, template_vars
+        )
         
-        # Используем канонический шаблон для поиска отношения
-        if canonical_template in canonical_template_to_relation:
-            # Определяем входные параметры (оригинальные имена)
-            input_params = []
-            for t_var in template_vars:
-                if t_var in var_mapping:
-                    input_params.append(var_mapping[t_var])
-            
-            # Определяем выходной параметр (левая часть формулы)
-            output_param = left_part
-            
-            # Получаем имя relation для этого канонического шаблона
-            relation_name = canonical_template_to_relation[canonical_template]
-            
-            # Получаем элемент правил для этого класса
-            class_rules_element = classes_data[class_name]['rules_element']
-            
-            if class_rules_element is None:
-                print(f"  ✗ Не найден элемент правил для класса {class_name}")
-                continue
-
-            rule_name_str = original_formula.replace(" ", "")
-                
-            try:
-                creator.add_rule(
-                    class_rules_element,  
-                    rule_name=rule_name_str,
-                    relation_name=relation_name,
-                    input_params=input_params,
-                    output_param=output_param,
-                    class_names=[class_name],
-                    reverse_map=rev_var_mapping
-                )
-
-                print(f"  Создано правило {rule_counter}: {rule_name_str}")
-                rule_counter += 1
-            except Exception as e:
-                print(f"Ошибка создания правила: {e}")
-                import traceback
-                traceback.print_exc()
-        else:
+        # Получаем имя отношения
+        relation_name = formula_registry.get_relation_name(canonical_template)
+        if not relation_name:
             print(f"  Не найден relation для шаблона: {canonical_template}")
-
-    ################# Сохранение XML файла
+            continue
+        
+        # Получаем элемент правил для класса
+        class_rules_element = classes_data[class_name]['rules_element']
+        if class_rules_element is None:
+            print(f"  Не найден элемент правил для класса {class_name}")
+            continue
+        
+        # Создаем правило
+        input_params = [var_mapping.get(t_var, t_var) for t_var in template_vars]
+        output_param = left_part
+        rule_name_str = original_formula.replace(" ", "")
+        
+        try:
+            creator.add_rule(
+                class_rules_element,
+                rule_name=rule_name_str,
+                relation_name=relation_name,
+                input_params=input_params,
+                output_param=output_param,
+                class_names=[class_name],
+                reverse_map=rev_var_mapping
+            )
+            print(f"  Создано правило {rule_counter}: {rule_name_str}")
+            rule_counter += 1
+        except Exception as e:
+            print(f"Ошибка создания правила: {e}")
+            import traceback
+            traceback.print_exc()
     
-    tree = etree.ElementTree(model)
+    return rule_counter - 1
 
-    with open("MIVAR.xml", "wb") as f:
-        tree.write(f, encoding="utf-8", pretty_print=True, xml_declaration=True)
+def main():
+    OLD_EXCEL_FILE = "Phys7Class.xlsx"
+    
+    print("Начинаем обработку Excel файла...")
+    
+    # Обрабатываем Excel файл
+    classes_data, formula_registry, processed_excel = process_excel_file(OLD_EXCEL_FILE)
+    
+    print(f"Обработано формул: {len(formula_registry.get_all_formulas())}")
+    print(f"Уникальных канонических шаблонов: {len(formula_registry.canonical_templates)}")
+    
+    # Создаем XML с правилами
+    print("\nСоздаем XML файл...")
+    relations_count, classes_count = create_xml_with_rules(
+        classes_data, 
+        formula_registry, 
+        processed_excel
+    )
     
     print(f"\nСоздано XML файлов:")
-    print(f"- Правил: {rule_counter - 1}")
-    print(f"- Отношений: {len(relations_list)}")
-    print(f"- Классов: {len(classes_data)}")
+    print(f"- Отношений: {relations_count}")
+    print(f"- Классов: {classes_count}")
+    print(f"- Формул в реестре: {len(formula_registry.get_all_formulas())}")
 
 if __name__ == "__main__":
     main()
