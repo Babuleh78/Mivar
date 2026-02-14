@@ -16,10 +16,6 @@ class FormulaProcessor:
     
     @staticmethod
     def normalize_variable_name(var_name):
-        """
-        Нормализует имя переменной: транслитерирует русские буквы,
-        оставляет латиницу, остальные символы сохраняет как есть.
-        """
         result = ''
         for char in var_name:
             if char.lower() in FormulaProcessor.RU_TO_EN:
@@ -32,16 +28,6 @@ class FormulaProcessor:
     
     @staticmethod
     def extract_variables(formula, exclude=None):
-        """
-        Извлекает все переменные из формулы.
-        
-        Args:
-            formula: строка с формулой
-            exclude: список переменных для исключения (или одна переменная)
-        
-        Returns:
-            list: список уникальных переменных в порядке появления
-        """
         if exclude is None:
             exclude = []
         elif isinstance(exclude, str):
@@ -63,7 +49,6 @@ class FormulaProcessor:
     
     @staticmethod
     def _replace_abs(expression):
-        """Заменяет модули |x| на abs(x) итеративно для обработки вложенных модулей"""
         result = expression
         # Ищем пары |...| без вложенных | внутри (самые внутренние)
         max_iterations = 10 
@@ -76,12 +61,9 @@ class FormulaProcessor:
 
     @staticmethod
     def _replace_powers_temp(expression):
-        """Заменяет степени на вызовы pow (без префикса Math.)"""
-        # Сначала обрабатываем выражения в скобках: (a+b)^2
         expression = re.sub(r'\(([^)]+)\)\^(\d+\.?\d*)', 
                           lambda m: f"pow({m.group(1)}, {m.group(2)})", 
                           expression)
-        # Затем простые базы: x^2, 2^3
         expression = re.sub(r'([a-zA-Z0-9]+)\^(\d+\.?\d*)', 
                           lambda m: f"pow({m.group(1)}, {m.group(2)})", 
                           expression)
