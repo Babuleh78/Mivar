@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<model id="{81b08bd5-1a7a-4ec8-9a38-2ff298e776ed}" shortName="Phys8Class_MIVAR.xlsx" formatXmlVersion="2.0" description="Phys8Class_MIVAR.xlsx">
+<class id="{c1902ecc-d2f5-4763-a793-3beeb63f58e7}" shortName="Phys8Class_MIVAR.xlsx">
+<parameters/>
+<rules>
+</rules>
+<constraints/>
+<classes>
+<class id="feb75027-a0d9-4785-8065-266a0f813662" shortName="Тепловые явления">
+<parameters>
+<parameter id="54fbe2ea-5289-473c-a42f-17ca6ed49afc" shortName="t1" type="double" description="Начальная температура [°С]"/>
+<parameter id="c7fbe323-28e8-4c7e-89e0-3dab47d72116" shortName="λ" type="double" description="Удельная теплота плавления [Дж/кг]"/>
+<parameter id="7f3e9e80-c1f7-4ec9-9643-2f41f00da1f0" shortName="Aз" type="double" description="Затраченная работа [Дж]"/>
+<parameter id="1a01dab6-c768-43fb-a9c3-8e16f421889a" shortName="t2" type="double" description="Конечная температура [°С]"/>
+<parameter id="5888173d-9f05-42bb-aa15-d794d9d2c3ec" shortName="c" type="double"/>
+<parameter id="a7f19a18-920d-4433-a28a-fdffd713cbb2" shortName="q" type="double" description="Удельная теплота сгорания топлива&#10;[Дж/кг]"/>
+<parameter id="1f209a51-ce1d-473b-b8da-be4e0e0e00c3" shortName="m" type="double" description="Масса [кг]"/>
+<parameter id="3b7c4f5b-dce5-4b14-870e-9615899e5db8" shortName="ρ" type="double" description="Коэффициент полезного действия [%]"/>
+<parameter id="4460c18c-49b8-4db6-a85b-c3090deac407" shortName="Qпар" type="double" description="Количество теплоты при парообразовании&#10;[Дж]"/>
+<parameter id="ae219cb6-249a-4b75-aede-fe0c7ad9bb21" shortName="Qпл" type="double" description="Количество теплоты при плавлении [Дж]"/>
+<parameter id="0a0f63a7-8105-4034-8599-1238b0686aec" shortName="L" type="double" description="Удельная теплота парообразования&#10;[Дж/кг]"/>
+<parameter id="b9812fe7-2711-4f9a-9ee4-28c715f92277" shortName="Δt" type="double" description="(t2–t1 ) — разность температур [°С]"/>
+<parameter id="20e4222a-1a11-4a10-9567-91c21c5d5af9" shortName="V" type="double" description="Объем тела/жидкости/газа [м3&#10;]"/>
+<parameter id="b90ad425-1985-4e42-9c67-c56fd55b993c" shortName="Qнг" type="double" description="Количество теплоты при нагревании [Дж]"/>
+<parameter id="a52058e6-045c-40a8-aa81-a2c4b8a3fd9f" shortName="Q0" type="double" description="Количество теплоты [Дж]"/>
+<parameter id="ae7b924b-4a44-462f-86bd-006126365b5a" shortName="Qсг" type="double" description="Количество теплоты при сгорании [Дж]"/>
+<parameter id="410a0895-40ce-4e7b-a431-692389e65051" shortName="C" type="double" description="Удельная теплоемкость [Дж/кг. °С]"/>
+<parameter id="c2021a95-eef3-453c-b548-be772278c507" shortName="η" type="double" description="Коэффициент полезного действия [%]"/>
+<parameter id="56b76463-c586-4410-afc8-c49e79e4a524" shortName="Aп" type="double" description="Полезная работа [Дж]"/></parameters>
+<rules>
+<rule id="9e016941-7ac8-4858-9942-8e7dc345737c" shortName="Qнг=c*m*(t2-t1)" relation="98346e27-00e3-4e85-9ddc-a32b64b4cae4" resultId="y:b90ad425-1985-4e42-9c67-c56fd55b993c" initId="a:5888173d-9f05-42bb-aa15-d794d9d2c3ec;b:1f209a51-ce1d-473b-b8da-be4e0e0e00c3;c:1a01dab6-c768-43fb-a9c3-8e16f421889a;d:54fbe2ea-5289-473c-a42f-17ca6ed49afc"/>
+<rule id="fb3c17e8-d03e-4ca4-a91b-d16499d4964b" shortName="Qнг=c*m*Δt" relation="9de98f95-984f-4738-bad3-d9329c555233" resultId="y:b90ad425-1985-4e42-9c67-c56fd55b993c" initId="a:5888173d-9f05-42bb-aa15-d794d9d2c3ec;b:1f209a51-ce1d-473b-b8da-be4e0e0e00c3;c:b9812fe7-2711-4f9a-9ee4-28c715f92277"/>
+<rule id="76113739-2205-4605-a949-ac6adb96d4b8" shortName="t2=Qнг/(c*m)+t1" relation="e08076db-a790-4ade-9d44-73c3b493ae5e" resultId="y:1a01dab6-c768-43fb-a9c3-8e16f421889a" initId="a:b90ad425-1985-4e42-9c67-c56fd55b993c;b:5888173d-9f05-42bb-aa15-d794d9d2c3ec;c:1f209a51-ce1d-473b-b8da-be4e0e0e00c3;d:54fbe2ea-5289-473c-a42f-17ca6ed49afc"/>
+<rule id="17ce481e-5a9e-4f8e-bd73-2eecf6b1fbc0" shortName="c=Qнг/(m*Δt)" relation="a1470aa3-0754-467f-992e-d1a26e6527cd" resultId="y:5888173d-9f05-42bb-aa15-d794d9d2c3ec" initId="a:b90ad425-1985-4e42-9c67-c56fd55b993c;b:1f209a51-ce1d-473b-b8da-be4e0e0e00c3;c:b9812fe7-2711-4f9a-9ee4-28c715f92277"/>
+<rule id="cdc52583-b724-45c3-b192-2f3caeee4ff7" shortName="t1=-Qнг/(c*m)+t2" relation="33b14dd2-2b51-4a44-a322-da0c6edf0e4d" resultId="y:54fbe2ea-5289-473c-a42f-17ca6ed49afc" initId="a:b90ad425-1985-4e42-9c67-c56fd55b993c;b:5888173d-9f05-42bb-aa15-d794d9d2c3ec;c:1f209a51-ce1d-473b-b8da-be4e0e0e00c3;d:1a01dab6-c768-43fb-a9c3-8e16f421889a"/>
+<rule id="f01ff5dc-3242-4815-9f8e-883258c52690" shortName="m=Qнг/(c*Δt)" relation="a1470aa3-0754-467f-992e-d1a26e6527cd" resultId="y:1f209a51-ce1d-473b-b8da-be4e0e0e00c3" initId="a:b90ad425-1985-4e42-9c67-c56fd55b993c;b:5888173d-9f05-42bb-aa15-d794d9d2c3ec;c:b9812fe7-2711-4f9a-9ee4-28c715f92277"/>
+<rule id="e6a83a5d-b54a-4759-8d0c-b27a763a6aa4" shortName="m=Qсг/q" relation="5a0e5a87-0d3d-4f42-899e-3b051b0752ed" resultId="y:1f209a51-ce1d-473b-b8da-be4e0e0e00c3" initId="a:ae7b924b-4a44-462f-86bd-006126365b5a;b:a7f19a18-920d-4433-a28a-fdffd713cbb2"/>
+<rule id="8d15a666-a52a-490f-94d4-b38cb74ebc2d" shortName="m=V*ρ" relation="be725c3b-7ba1-4124-a574-ae30a0124368" resultId="y:1f209a51-ce1d-473b-b8da-be4e0e0e00c3" initId="a:20e4222a-1a11-4a10-9567-91c21c5d5af9;b:3b7c4f5b-dce5-4b14-870e-9615899e5db8"/>
+<rule id="ce9c42c9-4947-4ffe-a644-4f8be94107b4" shortName="Q0=Qпл+Qнг" relation="d49ac53a-9a5c-4ca6-aee4-39e7bd20cfe9" resultId="y:a52058e6-045c-40a8-aa81-a2c4b8a3fd9f" initId="a:ae219cb6-249a-4b75-aede-fe0c7ad9bb21"/>
+<rule id="d520214c-9026-4a8d-b3a3-a2dd5cdaefb9" shortName="Qсг=q*m" relation="be725c3b-7ba1-4124-a574-ae30a0124368" resultId="y:ae7b924b-4a44-462f-86bd-006126365b5a" initId="a:a7f19a18-920d-4433-a28a-fdffd713cbb2;b:1f209a51-ce1d-473b-b8da-be4e0e0e00c3"/>
+<rule id="463dadf4-b629-4448-9d22-ddebe0f72fe2" shortName="q=Qсг/m" relation="5a0e5a87-0d3d-4f42-899e-3b051b0752ed" resultId="y:a7f19a18-920d-4433-a28a-fdffd713cbb2" initId="a:ae7b924b-4a44-462f-86bd-006126365b5a;b:1f209a51-ce1d-473b-b8da-be4e0e0e00c3"/>
+<rule id="78accc25-c915-4729-bd7e-9313e6892551" shortName="Qпл=λ*m" relation="be725c3b-7ba1-4124-a574-ae30a0124368" resultId="y:ae219cb6-249a-4b75-aede-fe0c7ad9bb21" initId="a:c7fbe323-28e8-4c7e-89e0-3dab47d72116;b:1f209a51-ce1d-473b-b8da-be4e0e0e00c3"/>
+<rule id="31cff350-9e09-4922-9f70-2077659e1f69" shortName="V=m/ρ" relation="5a0e5a87-0d3d-4f42-899e-3b051b0752ed" resultId="y:20e4222a-1a11-4a10-9567-91c21c5d5af9" initId="a:1f209a51-ce1d-473b-b8da-be4e0e0e00c3;b:3b7c4f5b-dce5-4b14-870e-9615899e5db8"/>
+<rule id="d64ce70d-7a82-4b3c-bd39-1f4b3732aa54" shortName="Qпар=L*m" relation="be725c3b-7ba1-4124-a574-ae30a0124368" resultId="y:4460c18c-49b8-4db6-a85b-c3090deac407" initId="a:0a0f63a7-8105-4034-8599-1238b0686aec;b:1f209a51-ce1d-473b-b8da-be4e0e0e00c3"/>
+<rule id="46f265e9-9a1a-42c4-be83-1437b995fc43" shortName="L=Qпар/m" relation="5a0e5a87-0d3d-4f42-899e-3b051b0752ed" resultId="y:0a0f63a7-8105-4034-8599-1238b0686aec" initId="a:4460c18c-49b8-4db6-a85b-c3090deac407;b:1f209a51-ce1d-473b-b8da-be4e0e0e00c3"/>
+<rule id="d7a0434e-7c47-4aff-b7f6-c01dabb8fdda" shortName="η=(Aп*100)/Aз" relation="7819b97b-2a24-430a-8da9-f99404ec4d69" resultId="y:c2021a95-eef3-453c-b548-be772278c507" initId="a:56b76463-c586-4410-afc8-c49e79e4a524"/>
+<rule id="1868a889-d29c-4403-bcec-1dd71ad49404" shortName="Aз=m*q" relation="be725c3b-7ba1-4124-a574-ae30a0124368" resultId="y:7f3e9e80-c1f7-4ec9-9643-2f41f00da1f0" initId="a:1f209a51-ce1d-473b-b8da-be4e0e0e00c3;b:a7f19a18-920d-4433-a28a-fdffd713cbb2"/>
+</rules>
+<constraints/>
+<classes/>
+</class>
+<class id="6d2e8909-de69-441c-b9ea-333af3462e8b" shortName="Электрические явления">
+<parameters>
+<parameter id="15741eaa-16bd-483d-be53-d0fbbca5e472" shortName="t" type="double" description="Время [с]"/>
+<parameter id="5af8be04-cab1-4013-8c37-2374454c03a9" shortName="R" type="double" description="Сопротивление [Ом]"/>
+<parameter id="e2297b31-52eb-4ed8-bbb4-e43ad8b285dc" shortName="I" type="double" description="Сила тока [А]"/>
+<parameter id="2e763e2e-54b2-4ecf-abae-668804c494f8" shortName="Δl" type="double" description="Длина [м]"/>
+<parameter id="03114301-628d-4bc2-acd3-69763acc95ae" shortName="s" type="double" description="Площадь поперечного сечения [мм2&#10;]"/>
+<parameter id="31a25f88-c1d2-4167-9f07-135133c6a939" shortName="P" type="double" description="Мощность [Вт]"/>
+<parameter id="8422a7d3-c2c9-400e-bd24-7e2765047c7d" shortName="q" type="double" description="Электрический заряд [Кл]"/>
+<parameter id="3a255555-db3f-40bf-b8b8-f421ac35e780" shortName="ρ" type="double" description="Удельное сопротивление [Ом∙мм2&#10;/м]"/>
+<parameter id="cf4881fc-3911-4938-84c7-f565d63a170e" shortName="Qt" type="double" description="Количество теплоты, выделяемое&#10;проводником с током [Дж]"/>
+<parameter id="038b52c6-200c-43da-a5d7-817e0e3d14ea" shortName="U" type="double" description="Напряжение [В]"/>
+<parameter id="bbd9653d-b0f0-4a5c-8cf2-4b0e715ffa67" shortName="At" type="double" description="Работа тока [Дж]"/></parameters>
+<rules>
+<rule id="44aa58cc-472b-45e3-a8bd-c1849de1c9b6" shortName="q=I*t" relation="be725c3b-7ba1-4124-a574-ae30a0124368" resultId="y:8422a7d3-c2c9-400e-bd24-7e2765047c7d" initId="a:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc;b:15741eaa-16bd-483d-be53-d0fbbca5e472"/>
+<rule id="a1ed1d3e-c8c6-4891-b19e-081600c317ab" shortName="t=q/I" relation="5a0e5a87-0d3d-4f42-899e-3b051b0752ed" resultId="y:15741eaa-16bd-483d-be53-d0fbbca5e472" initId="a:8422a7d3-c2c9-400e-bd24-7e2765047c7d;b:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc"/>
+<rule id="e1f5d9bf-1684-476d-a84c-529a9ce1da38" shortName="t=At/(I*U)" relation="a1470aa3-0754-467f-992e-d1a26e6527cd" resultId="y:15741eaa-16bd-483d-be53-d0fbbca5e472" initId="a:bbd9653d-b0f0-4a5c-8cf2-4b0e715ffa67;b:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc;c:038b52c6-200c-43da-a5d7-817e0e3d14ea"/>
+<rule id="c38fef4d-90eb-487d-ba13-b4925e771819" shortName="t=Qt/(I^2*R)" relation="a5548223-c3a1-45bb-83eb-d4ac1fb4334e" resultId="y:15741eaa-16bd-483d-be53-d0fbbca5e472" initId="a:cf4881fc-3911-4938-84c7-f565d63a170e;b:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc;c:5af8be04-cab1-4013-8c37-2374454c03a9"/>
+<rule id="d3ddf881-840a-4fff-8ed4-8992b6ce5f0a" shortName="I=q/t" relation="5a0e5a87-0d3d-4f42-899e-3b051b0752ed" resultId="y:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc" initId="a:8422a7d3-c2c9-400e-bd24-7e2765047c7d;b:15741eaa-16bd-483d-be53-d0fbbca5e472"/>
+<rule id="430c6439-f573-44d7-8cd6-70f966293563" shortName="I=At/(U*t)" relation="a1470aa3-0754-467f-992e-d1a26e6527cd" resultId="y:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc" initId="a:bbd9653d-b0f0-4a5c-8cf2-4b0e715ffa67;b:15741eaa-16bd-483d-be53-d0fbbca5e472;c:038b52c6-200c-43da-a5d7-817e0e3d14ea"/>
+<rule id="b5987791-6f10-479f-9c6f-8a6768a31cd7" shortName="I=(Qt/(R*t))^(1/2)" relation="cc02613d-a66c-4e9c-8f05-b00fb4901986" resultId="y:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc" initId="a:cf4881fc-3911-4938-84c7-f565d63a170e;b:15741eaa-16bd-483d-be53-d0fbbca5e472;c:5af8be04-cab1-4013-8c37-2374454c03a9"/>
+<rule id="c357029f-f204-45da-b7be-b5048524559f" shortName="U=At/q" relation="5a0e5a87-0d3d-4f42-899e-3b051b0752ed" resultId="y:038b52c6-200c-43da-a5d7-817e0e3d14ea" initId="a:bbd9653d-b0f0-4a5c-8cf2-4b0e715ffa67;b:8422a7d3-c2c9-400e-bd24-7e2765047c7d"/>
+<rule id="18f92f90-7526-4cab-a4cf-a01ff6a5ebe5" shortName="U=I*R" relation="be725c3b-7ba1-4124-a574-ae30a0124368" resultId="y:038b52c6-200c-43da-a5d7-817e0e3d14ea" initId="a:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc;b:5af8be04-cab1-4013-8c37-2374454c03a9"/>
+<rule id="199c6b03-66d4-4f55-9eff-a979367f56e5" shortName="U=At/(I*t)" relation="a1470aa3-0754-467f-992e-d1a26e6527cd" resultId="y:038b52c6-200c-43da-a5d7-817e0e3d14ea" initId="a:bbd9653d-b0f0-4a5c-8cf2-4b0e715ffa67;b:15741eaa-16bd-483d-be53-d0fbbca5e472;c:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc"/>
+<rule id="bfb27fa4-9d8f-447c-b42c-5f03099eae4b" shortName="At=U*q" relation="be725c3b-7ba1-4124-a574-ae30a0124368" resultId="y:bbd9653d-b0f0-4a5c-8cf2-4b0e715ffa67" initId="a:038b52c6-200c-43da-a5d7-817e0e3d14ea;b:8422a7d3-c2c9-400e-bd24-7e2765047c7d"/>
+<rule id="ec95f579-10c9-4926-bdb3-bbab23150592" shortName="At=U*I*t" relation="9de98f95-984f-4738-bad3-d9329c555233" resultId="y:bbd9653d-b0f0-4a5c-8cf2-4b0e715ffa67" initId="a:038b52c6-200c-43da-a5d7-817e0e3d14ea;b:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc;c:15741eaa-16bd-483d-be53-d0fbbca5e472"/>
+<rule id="72c4e79d-d3f6-4f03-9dbf-b2ea52cdd4af" shortName="R=U/I" relation="5a0e5a87-0d3d-4f42-899e-3b051b0752ed" resultId="y:5af8be04-cab1-4013-8c37-2374454c03a9" initId="a:038b52c6-200c-43da-a5d7-817e0e3d14ea;b:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc"/>
+<rule id="63a2fb9c-c951-47c7-a092-cae0d20208ec" shortName="R=ρ*Δl/s" relation="aeba5586-3cf2-4de8-a533-2f7df2a4b201" resultId="y:5af8be04-cab1-4013-8c37-2374454c03a9" initId="a:3a255555-db3f-40bf-b8b8-f421ac35e780;b:2e763e2e-54b2-4ecf-abae-668804c494f8;c:03114301-628d-4bc2-acd3-69763acc95ae"/>
+<rule id="4a74b854-6841-44c6-a913-03bbae92ec82" shortName="R=Qt/(I^2*t)" relation="a5548223-c3a1-45bb-83eb-d4ac1fb4334e" resultId="y:5af8be04-cab1-4013-8c37-2374454c03a9" initId="a:cf4881fc-3911-4938-84c7-f565d63a170e;b:15741eaa-16bd-483d-be53-d0fbbca5e472;c:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc"/>
+<rule id="cff07784-de35-44e2-886a-69c36114c0ce" shortName="s=Δl*ρ/R" relation="aeba5586-3cf2-4de8-a533-2f7df2a4b201" resultId="y:03114301-628d-4bc2-acd3-69763acc95ae" initId="a:2e763e2e-54b2-4ecf-abae-668804c494f8;b:3a255555-db3f-40bf-b8b8-f421ac35e780;c:5af8be04-cab1-4013-8c37-2374454c03a9"/>
+<rule id="4ccde932-df24-4cd5-bcf2-368e8d9c7431" shortName="P=U*I" relation="be725c3b-7ba1-4124-a574-ae30a0124368" resultId="y:31a25f88-c1d2-4167-9f07-135133c6a939" initId="a:038b52c6-200c-43da-a5d7-817e0e3d14ea;b:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc"/>
+<rule id="7051377d-e448-4863-b278-131f86ba174d" shortName="Qt=I^2*R*t" relation="1f38c483-8e8e-44ca-aed4-951588df6901" resultId="y:cf4881fc-3911-4938-84c7-f565d63a170e" initId="a:e2297b31-52eb-4ed8-bbb4-e43ad8b285dc;b:5af8be04-cab1-4013-8c37-2374454c03a9;c:15741eaa-16bd-483d-be53-d0fbbca5e472"/>
+</rules>
+<constraints/>
+<classes/>
+</class>
+<class id="0774d3ec-799f-4d4d-9dff-7b2546ec73f4" shortName="Световые явления">
+<parameters>
+<parameter id="13019513-760b-45cd-9c58-d1ae5483ec63" shortName="d" type="double" description="Расстояние от предмета до линзы [м]"/>
+<parameter id="a8cb7064-6837-41e7-a7c3-e4d864e60821" shortName="f" type="double" description="Расстояние от линзы до изображения [м]"/>
+<parameter id="d78303a1-1678-4033-8967-73141a7e09ce" shortName="D" type="double" description="Оптическая сила линзы [дптр]"/>
+<parameter id="72cc7eda-b03e-47c6-ae61-02fd8c1cdd16" shortName="F" type="double" description="Фокусное расстояние линзы [м]"/></parameters>
+<rules>
+<rule id="70e658da-1916-45d1-a0c0-8fca36183b02" shortName="D=1/F" relation="f9e31674-62a5-4cc9-8f8b-beae23d4529c" resultId="y:d78303a1-1678-4033-8967-73141a7e09ce" initId="a:72cc7eda-b03e-47c6-ae61-02fd8c1cdd16"/>
+<rule id="f2f26f98-07d8-4bdd-b763-f9b8759166c7" shortName="D=(d+f)/d/f" relation="30c43ee1-2e36-41e4-bffa-471202ce16c7" resultId="y:d78303a1-1678-4033-8967-73141a7e09ce" initId="a:13019513-760b-45cd-9c58-d1ae5483ec63;b:a8cb7064-6837-41e7-a7c3-e4d864e60821"/>
+<rule id="96306a69-af18-4ad2-94f4-98bc4a971f06" shortName="F=1/D" relation="f9e31674-62a5-4cc9-8f8b-beae23d4529c" resultId="y:72cc7eda-b03e-47c6-ae61-02fd8c1cdd16" initId="a:d78303a1-1678-4033-8967-73141a7e09ce"/>
+<rule id="d1942277-7b72-400e-905d-880eb653e560" shortName="d=f/(D*f-1)" relation="1c347423-c8ae-4997-9bad-024e2569c10f" resultId="y:13019513-760b-45cd-9c58-d1ae5483ec63" initId="a:a8cb7064-6837-41e7-a7c3-e4d864e60821;b:d78303a1-1678-4033-8967-73141a7e09ce"/>
+<rule id="88d76064-e205-4e57-9520-cda721184f16" shortName="f=d/(D*d-1)" relation="1c347423-c8ae-4997-9bad-024e2569c10f" resultId="y:a8cb7064-6837-41e7-a7c3-e4d864e60821" initId="a:13019513-760b-45cd-9c58-d1ae5483ec63;b:d78303a1-1678-4033-8967-73141a7e09ce"/>
+</rules>
+<constraints/>
+<classes/>
+</class>
+</classes>
+</class><relations>
+<relation id="7819b97b-2a24-430a-8da9-f99404ec4d69" shortName="y=(a*100)/a" inObj="a:double" relationType="simple" outObj="y:double">y=(a*100)/a</relation>
+<relation id="30c43ee1-2e36-41e4-bffa-471202ce16c7" shortName="y=(a+b)/a/b" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=(a+b)/a/b</relation>
+<relation id="cc02613d-a66c-4e9c-8f05-b00fb4901986" shortName="y=(a/(b*c))^(1/2)" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=(a/(b*c))^(1/2)</relation>
+<relation id="33b14dd2-2b51-4a44-a322-da0c6edf0e4d" shortName="y=-a/(b*c)+d" inObj="a:double;b:double;c:double;d:double" relationType="simple" outObj="y:double">y=-a/(b*c)+d</relation>
+<relation id="f9e31674-62a5-4cc9-8f8b-beae23d4529c" shortName="y=1/a" inObj="a:double" relationType="simple" outObj="y:double">y=1/a</relation>
+<relation id="1f38c483-8e8e-44ca-aed4-951588df6901" shortName="y=Math.pow(a,2)*b*c" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=Math.pow(a,2)*b*c</relation>
+<relation id="be725c3b-7ba1-4124-a574-ae30a0124368" shortName="y=a*b" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=a*b</relation>
+<relation id="98346e27-00e3-4e85-9ddc-a32b64b4cae4" shortName="y=a*b*(c-d)" inObj="a:double;b:double;c:double;d:double" relationType="simple" outObj="y:double">y=a*b*(c-d)</relation>
+<relation id="9de98f95-984f-4738-bad3-d9329c555233" shortName="y=a*b*c" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=a*b*c</relation>
+<relation id="aeba5586-3cf2-4de8-a533-2f7df2a4b201" shortName="y=a*b/c" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=a*b/c</relation>
+<relation id="d49ac53a-9a5c-4ca6-aee4-39e7bd20cfe9" shortName="y=a+a" inObj="a:double" relationType="simple" outObj="y:double">y=a+a</relation>
+<relation id="a5548223-c3a1-45bb-83eb-d4ac1fb4334e" shortName="y=a/(Math.pow(b,2)*c)" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=a/(Math.pow(b,2)*c)</relation>
+<relation id="1c347423-c8ae-4997-9bad-024e2569c10f" shortName="y=a/(b*a-1)" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=a/(b*a-1)</relation>
+<relation id="a1470aa3-0754-467f-992e-d1a26e6527cd" shortName="y=a/(b*c)" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=a/(b*c)</relation>
+<relation id="e08076db-a790-4ade-9d44-73c3b493ae5e" shortName="y=a/(b*c)+d" inObj="a:double;b:double;c:double;d:double" relationType="simple" outObj="y:double">y=a/(b*c)+d</relation>
+<relation id="5a0e5a87-0d3d-4f42-899e-3b051b0752ed" shortName="y=a/b" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=a/b</relation>
+</relations>
+</model>
