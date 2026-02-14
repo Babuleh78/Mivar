@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<model id="{0969df67-c216-4700-96f5-5cc84925c364}" shortName="Phys7Class_MIVAR.xlsx" formatXmlVersion="2.0" description="Phys7Class_MIVAR.xlsx">
+<class id="{7b568dfd-7566-4e35-aff9-960e170a9784}" shortName="Phys7Class_MIVAR.xlsx">
+<parameters/>
+<rules>
+</rules>
+<constraints/>
+<classes>
+<class id="cd5f29c3-5ed4-49c5-9eaf-020202cd72e4" shortName="Взаимодействие тел">
+<parameters>
+<parameter id="66c385c4-3ea3-4ce2-8064-35c437590e9d" shortName="s" type="double" description="Путь [м]"/>
+<parameter id="ca7b56fe-4d9d-4bb8-8e43-80307b711c31" shortName="F3" type="double" description="3-я сила [Н]"/>
+<parameter id="129bec94-595c-464d-bbc4-6cee3ef121a5" shortName="k" type="double" description="Жесткость [Н/м]"/>
+<parameter id="42bb933e-2d74-4b16-a4b5-2878a588ba73" shortName="P" type="double"/>
+<parameter id="2a76f623-63df-4994-8255-5a57ad84f4a1" shortName="ρ" type="double" description="Плотность [кг/м3]"/>
+<parameter id="6dfbfbee-ce66-44a4-a224-a074a2334efd" shortName="Δl" type="double" description="Удлинение [м]"/>
+<parameter id="1f94ea81-3bdf-490c-a52a-c357bc29e952" shortName="m" type="double" description="Масса [кг]"/>
+<parameter id="8727f63d-8913-4deb-a84b-3c030f036d48" shortName="Fт" type="double" description="Сила тяжести [Н]"/>
+<parameter id="955e04b7-9c4d-4a60-bb1c-656474031e02" shortName="Fупр" type="double" description="Сила упругости [H]"/>
+<parameter id="97cd2f72-9971-495a-9d4b-8fb6a89cc551" shortName="g" type="double" description="10 м/с2 ускорение свободного падения"/>
+<parameter id="53c66b2a-d103-4adb-9d0a-8a4b6f49dd11" shortName="v" type="double" description="Скорость [м/с]"/>
+<parameter id="3cd79f92-5783-4a5a-a20b-6dcf453b0e42" shortName="t" type="double" description="Время [с]"/>
+<parameter id="b2c7ccbf-d29b-4f68-b702-9be2a8c3cbc3" shortName="V" type="double" description="Скорость [м/с]"/>
+<parameter id="d2784416-0bb2-4c2d-9015-f915546bcd1c" shortName="R" type="double" description="Равнодействующая [Н]"/>
+<parameter id="de8fdf63-27b9-46fb-a6d3-d1f392b2bafb" shortName="F1" type="double" description="1-я сила [Н]"/>
+<parameter id="31ddd314-70a6-4144-b55d-77d103d85d81" shortName="F4" type="double" description="4-я сила [Н]"/>
+<parameter id="8dc1fc2e-1e5d-416b-8f65-7a19ff02764c" shortName="F2" type="double" description="2-я сила [Н]"/></parameters>
+<rules>
+<rule id="5c71d955-e7e8-4395-9104-e5fafd072398" shortName="v=s/t" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:53c66b2a-d103-4adb-9d0a-8a4b6f49dd11" initId="a:66c385c4-3ea3-4ce2-8064-35c437590e9d;b:3cd79f92-5783-4a5a-a20b-6dcf453b0e42"/>
+<rule id="5c5e06b7-f6c7-41fc-b3bb-f1ff4e8d44e0" shortName="s=t*v" relation="4c44ea0e-f175-4604-89a8-65c5a243fb03" resultId="y:66c385c4-3ea3-4ce2-8064-35c437590e9d" initId="a:3cd79f92-5783-4a5a-a20b-6dcf453b0e42;b:53c66b2a-d103-4adb-9d0a-8a4b6f49dd11"/>
+<rule id="82b84540-b3c2-4d9a-bb5b-a8a27bee7fc4" shortName="t=s/v" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:3cd79f92-5783-4a5a-a20b-6dcf453b0e42" initId="a:66c385c4-3ea3-4ce2-8064-35c437590e9d;b:53c66b2a-d103-4adb-9d0a-8a4b6f49dd11"/>
+<rule id="2704d21e-04d2-4885-8780-083da133322d" shortName="ρ=m/V" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:2a76f623-63df-4994-8255-5a57ad84f4a1" initId="a:1f94ea81-3bdf-490c-a52a-c357bc29e952;b:b2c7ccbf-d29b-4f68-b702-9be2a8c3cbc3"/>
+<rule id="c82fcf52-4421-4bf9-9a33-02adcaf6b76f" shortName="V=m/ρ" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:b2c7ccbf-d29b-4f68-b702-9be2a8c3cbc3" initId="a:1f94ea81-3bdf-490c-a52a-c357bc29e952;b:2a76f623-63df-4994-8255-5a57ad84f4a1"/>
+<rule id="9485ef54-5fd5-4224-af5e-240fffcda13a" shortName="m=V*ρ" relation="4c44ea0e-f175-4604-89a8-65c5a243fb03" resultId="y:1f94ea81-3bdf-490c-a52a-c357bc29e952" initId="a:b2c7ccbf-d29b-4f68-b702-9be2a8c3cbc3;b:2a76f623-63df-4994-8255-5a57ad84f4a1"/>
+<rule id="14582f7d-ccfa-42f3-999f-758ee9505455" shortName="m=Fт/g" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:1f94ea81-3bdf-490c-a52a-c357bc29e952" initId="a:8727f63d-8913-4deb-a84b-3c030f036d48;b:97cd2f72-9971-495a-9d4b-8fb6a89cc551"/>
+<rule id="b29dc398-748e-44ae-86ed-d85b040ace8d" shortName="Fт=m*g" relation="4c44ea0e-f175-4604-89a8-65c5a243fb03" resultId="y:8727f63d-8913-4deb-a84b-3c030f036d48" initId="a:1f94ea81-3bdf-490c-a52a-c357bc29e952;b:97cd2f72-9971-495a-9d4b-8fb6a89cc551"/>
+<rule id="5e383460-02bf-429b-95c9-86277ecef016" shortName="g=Fт/m" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:97cd2f72-9971-495a-9d4b-8fb6a89cc551" initId="a:8727f63d-8913-4deb-a84b-3c030f036d48;b:1f94ea81-3bdf-490c-a52a-c357bc29e952"/>
+<rule id="1980a7c5-63f1-40fa-b5f9-2b27ac0ae165" shortName="P=g*m" relation="4c44ea0e-f175-4604-89a8-65c5a243fb03" resultId="y:42bb933e-2d74-4b16-a4b5-2878a588ba73" initId="a:97cd2f72-9971-495a-9d4b-8fb6a89cc551;b:1f94ea81-3bdf-490c-a52a-c357bc29e952"/>
+<rule id="cbf2cb77-d7b5-4251-8ca2-50a4b38ca46e" shortName="Fупр=k*Δl" relation="4c44ea0e-f175-4604-89a8-65c5a243fb03" resultId="y:955e04b7-9c4d-4a60-bb1c-656474031e02" initId="a:129bec94-595c-464d-bbc4-6cee3ef121a5;b:6dfbfbee-ce66-44a4-a224-a074a2334efd"/>
+<rule id="b37bc696-4ce1-4eb3-9f53-077f06bf95d3" shortName="k=Fупр/Δl" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:129bec94-595c-464d-bbc4-6cee3ef121a5" initId="a:955e04b7-9c4d-4a60-bb1c-656474031e02;b:6dfbfbee-ce66-44a4-a224-a074a2334efd"/>
+<rule id="21276518-6621-427f-bd58-813177f55acb" shortName="R=|(F1+F2)-(F3+F4)|" relation="7538254e-820c-4820-88c2-18d70d5078ba" resultId="y:d2784416-0bb2-4c2d-9015-f915546bcd1c" initId="a:de8fdf63-27b9-46fb-a6d3-d1f392b2bafb;b:8dc1fc2e-1e5d-416b-8f65-7a19ff02764c;c:ca7b56fe-4d9d-4bb8-8e43-80307b711c31;d:31ddd314-70a6-4144-b55d-77d103d85d81"/>
+</rules>
+<constraints/>
+<classes/>
+</class>
+<class id="640205c9-8f3c-4d9b-9199-f99c3efbdece" shortName="Давление твердых тел, жидкостей и газов">
+<parameters>
+<parameter id="ec69f3c7-b60b-41cc-97af-9f6a09465f56" shortName="p" type="double" description="Давление [Па]"/>
+<parameter id="9396cc0d-7407-4efc-aa76-7237d8ce4acc" shortName="S" type="double" description="Площадь [м2&#10;]"/>
+<parameter id="034d415a-11b3-4c41-9616-62e2c2f5954c" shortName="ρ" type="double" description="Плотность [кг/м3&#10;]"/>
+<parameter id="a4d9e72d-b37f-4f1a-92b6-1885b8e1daeb" shortName="F" type="double" description="Сила при давлении [Н]"/>
+<parameter id="7f3a11b0-aedf-4cf1-8554-86bd6d0ebd6d" shortName="m" type="double" description="Масса [кг]"/>
+<parameter id="a1cac363-e5f1-4657-bb5d-0c01ed937a1e" shortName="g" type="double"/>
+<parameter id="f3ff3f8d-4f0a-4094-bdbb-40e715f3963c" shortName="V" type="double" description="Объем [м3&#10;]"/>
+<parameter id="d4b91ede-e8fe-4a4d-9b56-4150d2a32f06" shortName="Fа" type="double" description="Сила Архимеда [Н]"/>
+<parameter id="e5f954b2-bc62-41e7-88d1-30a8fbcd5d32" shortName="h" type="double" description="Высота жидкости [м]"/></parameters>
+<rules>
+<rule id="0f957b24-6aa7-4a1a-8ddc-a626b9501b06" shortName="p=F/S" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:ec69f3c7-b60b-41cc-97af-9f6a09465f56" initId="a:a4d9e72d-b37f-4f1a-92b6-1885b8e1daeb;b:9396cc0d-7407-4efc-aa76-7237d8ce4acc"/>
+<rule id="faf0b363-497b-44f9-8b33-9c3b26047790" shortName="p=ρ*g*h" relation="460bac88-9bd1-4d78-b492-ceccb72d4780" resultId="y:ec69f3c7-b60b-41cc-97af-9f6a09465f56" initId="a:034d415a-11b3-4c41-9616-62e2c2f5954c;b:a1cac363-e5f1-4657-bb5d-0c01ed937a1e;c:e5f954b2-bc62-41e7-88d1-30a8fbcd5d32"/>
+<rule id="69ff279c-659f-4266-8caf-0d537efcc793" shortName="S=F/p" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:9396cc0d-7407-4efc-aa76-7237d8ce4acc" initId="a:a4d9e72d-b37f-4f1a-92b6-1885b8e1daeb;b:ec69f3c7-b60b-41cc-97af-9f6a09465f56"/>
+<rule id="cb3f9c6e-6eae-457f-b0a6-59e3b8ef447f" shortName="F=S*p" relation="4c44ea0e-f175-4604-89a8-65c5a243fb03" resultId="y:a4d9e72d-b37f-4f1a-92b6-1885b8e1daeb" initId="a:9396cc0d-7407-4efc-aa76-7237d8ce4acc;b:ec69f3c7-b60b-41cc-97af-9f6a09465f56"/>
+<rule id="d6b1190e-176e-44f0-ad0a-811b9fdaa976" shortName="h=p/(g*ρ)" relation="1498d46a-e951-430d-862e-d106b13f6bf5" resultId="y:e5f954b2-bc62-41e7-88d1-30a8fbcd5d32" initId="a:ec69f3c7-b60b-41cc-97af-9f6a09465f56;b:a1cac363-e5f1-4657-bb5d-0c01ed937a1e;c:034d415a-11b3-4c41-9616-62e2c2f5954c"/>
+<rule id="b58e7d8d-a509-42cc-81a2-3589737b46ea" shortName="g=p/(h*ρ)" relation="1498d46a-e951-430d-862e-d106b13f6bf5" resultId="y:a1cac363-e5f1-4657-bb5d-0c01ed937a1e" initId="a:ec69f3c7-b60b-41cc-97af-9f6a09465f56;b:e5f954b2-bc62-41e7-88d1-30a8fbcd5d32;c:034d415a-11b3-4c41-9616-62e2c2f5954c"/>
+<rule id="dfa7cc72-ddb2-452e-aafa-da592c30f245" shortName="Fа=g*ρ*V" relation="460bac88-9bd1-4d78-b492-ceccb72d4780" resultId="y:d4b91ede-e8fe-4a4d-9b56-4150d2a32f06" initId="a:a1cac363-e5f1-4657-bb5d-0c01ed937a1e;b:034d415a-11b3-4c41-9616-62e2c2f5954c;c:f3ff3f8d-4f0a-4094-bdbb-40e715f3963c"/>
+<rule id="6ff3dcb3-9116-4f85-8b37-c683afe85c7e" shortName="V=Fа/(g*ρ)" relation="1498d46a-e951-430d-862e-d106b13f6bf5" resultId="y:f3ff3f8d-4f0a-4094-bdbb-40e715f3963c" initId="a:d4b91ede-e8fe-4a4d-9b56-4150d2a32f06;b:a1cac363-e5f1-4657-bb5d-0c01ed937a1e;c:034d415a-11b3-4c41-9616-62e2c2f5954c"/>
+</rules>
+<constraints/>
+<classes/>
+</class>
+<class id="4fef8e5c-6741-4f99-ad37-49e6d0a75778" shortName="работа, мощность, энергия">
+<parameters>
+<parameter id="965ec499-204e-4aec-aacc-af7f27533cdf" shortName="F1" type="double" description="Сила, действующая на 1-е плечо"/>
+<parameter id="fa131781-b763-45bf-bf5b-9f2dc05dbafd" shortName="N" type="double" description="Мощность [Вт]"/>
+<parameter id="c503d588-8a05-4c8b-9cf8-92f70b44d18d" shortName="Eп" type="double" description="Потенциальная энергия [Дж]"/>
+<parameter id="63af5627-724d-49d3-a628-063744526463" shortName="l" type="double" description="Плечо силы [м]"/>
+<parameter id="939dc052-cd66-4abc-af82-67dbc3a80e0e" shortName="m" type="double"/>
+<parameter id="1d9c73b8-035b-4fe4-8d62-ffb6a8f03abc" shortName="g" type="double"/>
+<parameter id="bec6f8f4-c013-4b2a-ade0-81348dd2595b" shortName="v" type="double" description="Скорость [м/с]"/>
+<parameter id="89c2c7dd-5a98-41cb-8229-4f9cfbd40db8" shortName="l2" type="double" description="2-е плечо силы [м]"/>
+<parameter id="e45ce31d-0113-4b4f-a5a8-8e52a707669f" shortName="T" type="double" description="Время выполнения работы [с]"/>
+<parameter id="8e348af5-7d45-4987-a251-a363577dd4ea" shortName="F" type="double" description="Сила [Н]"/>
+<parameter id="b12b2a95-970d-4175-865a-c861d358edb5" shortName="Fт" type="double" description="Сила тяжести [Н]"/>
+<parameter id="3578d6c4-958a-475c-b66c-69677d67e686" shortName="A" type="double" description="Работа [Дж]"/>
+<parameter id="149e93eb-ca3f-442e-8188-78498a4a1f07" shortName="V" type="double" description="Объем [м3&#10;]"/>
+<parameter id="18e15e8f-764e-43a4-9d10-31de10a66ee6" shortName="M" type="double" description="Масса тела [кг]"/>
+<parameter id="c4f21419-de78-4366-9346-2c47381839fd" shortName="h" type="double" description="Высота [м]"/>
+<parameter id="bae2a933-3ac7-4088-8f9a-7ca7f3426b8c" shortName="Aз" type="double" description="Затраченная работа [Дж]"/>
+<parameter id="81485d0e-8dd8-42bd-b3d7-749727ef9401" shortName="l1" type="double" description="1-е плечо силы [м]"/>
+<parameter id="3d511fb5-890e-4aa8-a633-cfff6a365bbf" shortName="S" type="double" description="Перемещение тела [м]"/>
+<parameter id="b6ed6ea8-f925-45ad-be03-e3855d578a8f" shortName="ρ" type="double" description="Плотность [кг/м3&#10;]"/>
+<parameter id="a77ff9e0-a384-45ff-9489-5ff5decb18db" shortName="Aп" type="double" description="Полезная работа [Дж]"/>
+<parameter id="7cd23bc9-79b6-4377-a28d-3f9fffc79147" shortName="η" type="double" description="Коэффициент полезного действия [%]"/>
+<parameter id="7d605ca1-91e4-401e-b573-daa96d859ee3" shortName="Eк" type="double" description="Кинетическая энергия [Дж]"/>
+<parameter id="8d176084-e6a5-45fa-973e-4a6549fa15bc" shortName="F2" type="double" description="Сила, действующая на 2-е плечо"/></parameters>
+<rules>
+<rule id="3cd00e99-ec19-4ee9-ad80-aea04b6ccc1a" shortName="A=F*S" relation="4c44ea0e-f175-4604-89a8-65c5a243fb03" resultId="y:3578d6c4-958a-475c-b66c-69677d67e686" initId="a:8e348af5-7d45-4987-a251-a363577dd4ea;b:3d511fb5-890e-4aa8-a633-cfff6a365bbf"/>
+<rule id="a2086fbd-9b64-4a5d-9670-e5534148b70e" shortName="F=A/S" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:8e348af5-7d45-4987-a251-a363577dd4ea" initId="a:3578d6c4-958a-475c-b66c-69677d67e686;b:3d511fb5-890e-4aa8-a633-cfff6a365bbf"/>
+<rule id="9e229708-4eae-4b67-a0e7-eae9b5916339" shortName="N=A/T" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:fa131781-b763-45bf-bf5b-9f2dc05dbafd" initId="a:3578d6c4-958a-475c-b66c-69677d67e686;b:e45ce31d-0113-4b4f-a5a8-8e52a707669f"/>
+<rule id="a49988cd-9080-4bbd-a510-d567d88ed4ce" shortName="T=A/N" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:e45ce31d-0113-4b4f-a5a8-8e52a707669f" initId="a:3578d6c4-958a-475c-b66c-69677d67e686;b:fa131781-b763-45bf-bf5b-9f2dc05dbafd"/>
+<rule id="cfe6d7d5-a7fd-48bc-8ba6-497e2264b6cd" shortName="l1=(F2*l2)/F1" relation="348e0835-2a82-436a-aaad-7b59d878d474" resultId="y:81485d0e-8dd8-42bd-b3d7-749727ef9401" initId="a:8d176084-e6a5-45fa-973e-4a6549fa15bc;b:89c2c7dd-5a98-41cb-8229-4f9cfbd40db8;c:965ec499-204e-4aec-aacc-af7f27533cdf"/>
+<rule id="01ba4833-618a-480a-99fb-1fecbdf214bd" shortName="l2=F1*l1/F2" relation="bb94fc36-6e78-4914-b0ca-4ff0398b29d4" resultId="y:89c2c7dd-5a98-41cb-8229-4f9cfbd40db8" initId="a:965ec499-204e-4aec-aacc-af7f27533cdf;b:81485d0e-8dd8-42bd-b3d7-749727ef9401;c:8d176084-e6a5-45fa-973e-4a6549fa15bc"/>
+<rule id="9caaea84-d894-4cd7-a2d9-2f1f18df2480" shortName="F1=F2*l2/l1" relation="bb94fc36-6e78-4914-b0ca-4ff0398b29d4" resultId="y:965ec499-204e-4aec-aacc-af7f27533cdf" initId="a:8d176084-e6a5-45fa-973e-4a6549fa15bc;b:89c2c7dd-5a98-41cb-8229-4f9cfbd40db8;c:81485d0e-8dd8-42bd-b3d7-749727ef9401"/>
+<rule id="89554068-169a-4b88-b52a-0e569e0f721a" shortName="F2=F1*l1/l2" relation="bb94fc36-6e78-4914-b0ca-4ff0398b29d4" resultId="y:8d176084-e6a5-45fa-973e-4a6549fa15bc" initId="a:965ec499-204e-4aec-aacc-af7f27533cdf;b:81485d0e-8dd8-42bd-b3d7-749727ef9401;c:89c2c7dd-5a98-41cb-8229-4f9cfbd40db8"/>
+<rule id="6895a5f6-ac26-42be-9036-86135ee3bdfb" shortName="Aп=η*Aз/100" relation="a6c14db2-5a2b-4406-9f4a-1e8d10b2485a" resultId="y:a77ff9e0-a384-45ff-9489-5ff5decb18db" initId="a:7cd23bc9-79b6-4377-a28d-3f9fffc79147;b:bae2a933-3ac7-4088-8f9a-7ca7f3426b8c"/>
+<rule id="65318188-fd5c-4bbd-af3d-ca0de06be7b7" shortName="Eп=m*g*h" relation="460bac88-9bd1-4d78-b492-ceccb72d4780" resultId="y:c503d588-8a05-4c8b-9cf8-92f70b44d18d" initId="a:939dc052-cd66-4abc-af82-67dbc3a80e0e;b:1d9c73b8-035b-4fe4-8d62-ffb6a8f03abc;c:c4f21419-de78-4366-9346-2c47381839fd"/>
+<rule id="7167f3e5-3ad4-4af9-b39f-5a8d61d66b80" shortName="m=Eп/(g*h)" relation="1498d46a-e951-430d-862e-d106b13f6bf5" resultId="y:939dc052-cd66-4abc-af82-67dbc3a80e0e" initId="a:c503d588-8a05-4c8b-9cf8-92f70b44d18d;b:1d9c73b8-035b-4fe4-8d62-ffb6a8f03abc;c:c4f21419-de78-4366-9346-2c47381839fd"/>
+<rule id="7724a65a-04a8-4120-80b2-6788911ea6c1" shortName="m=2*Eк/v^2" relation="3407db2c-9744-49ab-943b-df4331ea844b" resultId="y:939dc052-cd66-4abc-af82-67dbc3a80e0e" initId="a:7d605ca1-91e4-401e-b573-daa96d859ee3;b:bec6f8f4-c013-4b2a-ade0-81348dd2595b"/>
+<rule id="8e9a0b8d-03bd-4bb9-bff7-cc13560a52c9" shortName="Eк=m*v^2/2" relation="3777fae5-ede6-4ba2-8843-807e8818eb7c" resultId="y:7d605ca1-91e4-401e-b573-daa96d859ee3" initId="a:939dc052-cd66-4abc-af82-67dbc3a80e0e;b:bec6f8f4-c013-4b2a-ade0-81348dd2595b"/>
+<rule id="f0c91c66-4bb4-4c96-9402-4cd2bb4bf019" shortName="v=2^(1/2)*(Eк/m)^(1/2)" relation="d52cba49-c9f4-49a5-ab7f-98f346116e8c" resultId="y:bec6f8f4-c013-4b2a-ade0-81348dd2595b" initId="a:7d605ca1-91e4-401e-b573-daa96d859ee3;b:939dc052-cd66-4abc-af82-67dbc3a80e0e"/>
+<rule id="887e3cdc-1370-4e70-9d72-cfb97c975b4f" shortName="M=F*l" relation="4c44ea0e-f175-4604-89a8-65c5a243fb03" resultId="y:18e15e8f-764e-43a4-9d10-31de10a66ee6" initId="a:8e348af5-7d45-4987-a251-a363577dd4ea;b:63af5627-724d-49d3-a628-063744526463"/>
+<rule id="a205a89d-bcd6-4eda-a315-3409507c5597" shortName="l=M/F" relation="05fae97e-8048-4df8-8d3c-bbb077c798b4" resultId="y:63af5627-724d-49d3-a628-063744526463" initId="a:18e15e8f-764e-43a4-9d10-31de10a66ee6;b:8e348af5-7d45-4987-a251-a363577dd4ea"/>
+</rules>
+<constraints/>
+<classes/>
+</class>
+</classes>
+</class><relations>
+<relation id="348e0835-2a82-436a-aaad-7b59d878d474" shortName="y=(a*b)/c" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=(a*b)/c</relation>
+<relation id="3407db2c-9744-49ab-943b-df4331ea844b" shortName="y=2*a/Math.pow(b,2)" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=2*a/Math.pow(b,2)</relation>
+<relation id="d52cba49-c9f4-49a5-ab7f-98f346116e8c" shortName="y=2^(1/2)*(a/b)^(1/2)" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=2^(1/2)*(a/b)^(1/2)</relation>
+<relation id="7538254e-820c-4820-88c2-18d70d5078ba" shortName="y=Math.abs((a+b)-(c+d))" inObj="a:double;b:double;c:double;d:double" relationType="simple" outObj="y:double">y=Math.abs((a+b)-(c+d))</relation>
+<relation id="3777fae5-ede6-4ba2-8843-807e8818eb7c" shortName="y=a*Math.pow(b,2)/2" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=a*Math.pow(b,2)/2</relation>
+<relation id="4c44ea0e-f175-4604-89a8-65c5a243fb03" shortName="y=a*b" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=a*b</relation>
+<relation id="460bac88-9bd1-4d78-b492-ceccb72d4780" shortName="y=a*b*c" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=a*b*c</relation>
+<relation id="a6c14db2-5a2b-4406-9f4a-1e8d10b2485a" shortName="y=a*b/100" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=a*b/100</relation>
+<relation id="bb94fc36-6e78-4914-b0ca-4ff0398b29d4" shortName="y=a*b/c" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=a*b/c</relation>
+<relation id="1498d46a-e951-430d-862e-d106b13f6bf5" shortName="y=a/(b*c)" inObj="a:double;b:double;c:double" relationType="simple" outObj="y:double">y=a/(b*c)</relation>
+<relation id="05fae97e-8048-4df8-8d3c-bbb077c798b4" shortName="y=a/b" inObj="a:double;b:double" relationType="simple" outObj="y:double">y=a/b</relation>
+</relations>
+</model>
